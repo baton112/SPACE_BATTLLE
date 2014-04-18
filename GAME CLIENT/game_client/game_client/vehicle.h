@@ -23,6 +23,7 @@ class vehicle
 private: 
 	sf::Texture bitMap;
 	sf::Vector2 <double> position; ///pozycja 0,0 -- lewy gorny rog
+	int angle;
 public:
 	vehicle();
 	~vehicle();
