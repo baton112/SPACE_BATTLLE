@@ -1,24 +1,21 @@
 #include <SFML/Graphics.hpp>
+#include "vehicle.h"
+#include "game.h"
+#include <iostream>
+
+#define RESOLUTION_X 1280
+#define RESOLUTION_Y 720 
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-	sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);
+	sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "SPACE BATTLE - CLIENT");
+	window.setVerticalSyncEnabled(true);
+	window.setFramerateLimit(60);
 
-	while (window.isOpen())
-	{
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-				window.close();
-		}
+	
+	game game; 
+	game.runGameLoop(&window);
 
-		window.clear();
-		window.draw(shape);
-		window.display();
-	}
 
 	return 0;
 }
