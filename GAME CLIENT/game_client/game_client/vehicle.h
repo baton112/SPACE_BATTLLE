@@ -3,6 +3,9 @@
 #include <SFML/System.hpp>
 #include <fstream>
 #include <string>
+#define M_PI        3.14159265358979323846
+#include <cmath>
+
 
 #define VEHICLE_SIZE_X 80
 #define VEHICLE_SIZE_Y 80
@@ -23,12 +26,16 @@ class vehicle
 private: 
 	sf::Texture bitMap;
 	sf::Vector2 <double> position; ///pozycja 0,0 -- lewy gorny rog
-	int angle;
+	double angle; /// kat 0 - pojazd patrzy pozniomo w prawo /// kat -90 ustawiony w konstruktorze 
+	const float velocity = 100; // odleglosc przebyta na sekunde
+	const float truningSpeed = 100; // ilosc stopini na sekunde
+	void move(float defta, bool forward);
+	void changeAngle(float delta, bool right); 
 public:
 	vehicle();
 	~vehicle();
 	void drowVehicle(sf::RenderWindow *appWindow);
-	void buttonAction(direction d);
+	void buttonAction(direction d, float delta);
 
 };
 
