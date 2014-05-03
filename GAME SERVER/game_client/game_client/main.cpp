@@ -37,6 +37,7 @@ int main()
 	SOCKET Listen = socket(AF_INET, SOCK_STREAM, NULL);
 	SOCKET Connect = socket(AF_INET, SOCK_STREAM, NULL);
 
+	std::cout<< "po zmianie";
 	SOCKADDR_IN server;
 	server.sin_addr.s_addr = inet_addr("127.0.0.1");
 	server.sin_family = AF_INET;
@@ -48,7 +49,7 @@ int main()
 	listen(Listen, SOMAXCONN); /// SOMAXCONN -- liczba maksymalnych polaczonych 
 
 	std::cout << "LISTEN " << std::endl;
-
+	
 	for (;;)
 	{
 		//// LACZENIE W TELLNET 
