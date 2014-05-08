@@ -1,14 +1,18 @@
 #include "game.h"
 
 
-
-
 struct ThreadParam{
 	vehicle *MyVehicle;
 	SOCKET Connect;
 	int clietntNumber;
 
 };
+
+struct netowrkThreadParams{
+	vehicle ** vtab;
+	int liczbaTestowa;
+};
+
 
 DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 {
@@ -49,7 +53,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 		{
 			printf("%c", buf);
 		}
-		std::cout << "a";
+		//std::cout << "a";
 	}
 
 	/*printf("Received parameters: i %d=, msg = \n", functionParams->clietntNumber);
@@ -68,53 +72,34 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	return 0;
 }
 
-
-
-void game::runGameLoop(sf::RenderWindow *appWindow)
+DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 {
-	std::chrono::high_resolution_clock::time_point time;
-	time = std::chrono::high_resolution_clock::now();
-	int ConnectedClients = 0;
-	WSAData wsaData;
-	WORD version = MAKEWORD(2, 2); ///wersja winsock
-
-	HANDLE threadsHandleTab[MAX_USERS];
-
-
-	int error = WSAStartup(version, &wsaData);
-	if (error != 0)
-	{
-		std::cout << "Tell the user that we could not find a usable  Winsock DLL.  " << std::endl;
-		system("pause");
-		return ;
-	}
-
 	SOCKET Listen = socket(AF_INET, SOCK_STREAM, NULL);
 	SOCKET Connect = socket(AF_INET, SOCK_STREAM, NULL);
 
-	std::cout << "po zmianie";
 	SOCKADDR_IN server;
 	server.sin_addr.s_addr = inet_addr("127.0.0.1");
 	server.sin_family = AF_INET;
 	server.sin_port = htons(LISTEN_PORT);
 	int server_size = sizeof(server);
+	int ConnectedClients = 0; /// liczba polaczonych kientow --- 0 - brak lientow
 
 	int result = bind(Listen, (struct sockaddr FAR*)&server, sizeof(server));
 
 	listen(Listen, SOMAXCONN); /// SOMAXCONN -- liczba maksymalnych polaczonych 
 
+	HANDLE threadsHandleTab[MAX_USERS];
 	std::cout << "LISTEN " << std::endl;
-	//sf::Window window;
-	//window.create(sf::VideoMode(800, 600), "My window");
+	vehicle **vehicleTab;
+	netowrkThreadParams * parametry = (netowrkThreadParams*)lpParam;
+	vehicleTab = parametry->vtab;
 
-	while (appWindow->isOpen())
+	//// LACZENIE W TELLNET 
+	/*
+	open ip port
+	*/
+	for (;;)
 	{
-
-		//// LACZENIE W TELLNET 
-		/*
-		open ip port
-		*/
-		
 		if (Connect = accept(Listen, (struct sockaddr FAR*)&server, &server_size))
 		{
 			std::cout << "CONNECTED " << std::endl;
@@ -125,25 +110,59 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 			a->clietntNumber = ConnectedClients;
 			a->Connect = Connect;
 			//odpalenie watku obslugi polaczenienia przychodzacego 
-			
-			
-			threadsHandleTab[0] = CreateThread(
+			threadsHandleTab[ConnectedClients] = CreateThread(
 				NULL,                   // default security attributes
 				0,                      // use default stack size  
 				ThreadFunctionRecive,       // thread function name
 				a,          // argument to thread function 
 				0,                      // use default creation flags 
 				NULL);   // returns the thread identifier
-			
+
 			//Sleep(10);
-		
+
 			//WaitForSingleObject(threadsHandleTab[0], INFINITE);
 			ConnectedClients++;
-
 		}
-		//Sleep(10);
+	}
 
-		
+	return 0;
+}
+
+void game::runGameLoop(sf::RenderWindow *appWindow)
+{
+	std::chrono::high_resolution_clock::time_point time;
+	time = std::chrono::high_resolution_clock::now();
+	int ConnectedClients = 0;
+	WSAData wsaData;
+	WORD version = MAKEWORD(2, 2); ///wersja winsock
+
+	HANDLE NetworkindThreadHandle;
+
+
+	int error = WSAStartup(version, &wsaData);
+	if (error != 0)
+	{
+		std::cout << "Tell the user that we could not find a usable  Winsock DLL.  " << std::endl;
+		system("pause");
+		return ;
+	}
+
+	//tworzenie watku do oblugi polaczen 
+	netowrkThreadParams a;
+	a.liczbaTestowa = 69;
+	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
+	NetworkindThreadHandle = CreateThread(
+		NULL,                   // default security attributes
+		0,                      // use default stack size  
+		ThreadHandleConnections,       // thread function name
+		&a,          // argument to thread function 
+		0,                      // use default creation flags 
+		NULL);   // returns the thread identifier
+
+	//////////////////////
+
+	while (appWindow->isOpen())
+	{
 
 
 		std::chrono::high_resolution_clock::duration time_enlapsed = std::chrono::high_resolution_clock::now() - time;
