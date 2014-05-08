@@ -1,16 +1,13 @@
 #include "game.h"
 
-
 struct ThreadParam{
 	vehicle *MyVehicle;
 	SOCKET Connect;
 	int clietntNumber;
-
 };
 
 struct netowrkThreadParams{
 	vehicle ** vtab;
-	int liczbaTestowa;
 };
 
 
@@ -19,28 +16,12 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	HANDLE hStdout;
 	ThreadParam *functionParams;
 
-	//TCHAR msgBuf[BUF_SIZE];
-	//size_t cchStringSize;
-	//DWORD dwChars;
-
-	// Make sure there is a console to receive output results. 
-
 	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (hStdout == INVALID_HANDLE_VALUE)
 		return 1;
 
-	// Cast the parameter to the correct data type.
-	// The pointer is known to be valid because 
-	// it was checked for NULL before the thread was created.
 
 	functionParams = (ThreadParam*)lpParam;
-
-	// Print the parameter values using thread-safe functions.
-
-	//StringCchPrintf(msgBuf, BUF_SIZE, TEXT("Parameters = %d, %d\n"),
-	//	pDataArray->val1, pDataArray->val2);
-	//StringCchLength(msgBuf, BUF_SIZE, &cchStringSize);
-	//WriteConsole(hStdout, msgBuf, (DWORD)cchStringSize, &dwChars, NULL);
 
 	std::cout << "Connected " << functionParams->clietntNumber << std::endl;
 
@@ -56,19 +37,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 		//std::cout << "a";
 	}
 
-	/*printf("Received parameters: i %d=, msg = \n", functionParams->clietntNumber);
 
-	//PMYDATA pDataArray;
-	#define BUF_SIZE 255
-	TCHAR msgBuf[BUF_SIZE];
-	size_t cchStringSize;
-	DWORD dwChars;
-	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-	StringCchPrintf(msgBuf, BUF_SIZE, TEXT("Parameters = %d, %d\n"),
-	11, 22);
-	StringCchLength(msgBuf, BUF_SIZE, &cchStringSize);
-	WriteConsole(hStdout, msgBuf, (DWORD)cchStringSize, &dwChars, NULL);
-	*/
 	return 0;
 }
 
@@ -117,10 +86,6 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 				a,          // argument to thread function 
 				0,                      // use default creation flags 
 				NULL);   // returns the thread identifier
-
-			//Sleep(10);
-
-			//WaitForSingleObject(threadsHandleTab[0], INFINITE);
 			ConnectedClients++;
 		}
 	}
@@ -147,9 +112,8 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		return ;
 	}
 
-	//tworzenie watku do oblugi polaczen 
+	//////////tworzenie watku do oblugi polaczen 
 	netowrkThreadParams a;
-	a.liczbaTestowa = 69;
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	NetworkindThreadHandle = CreateThread(
 		NULL,                   // default security attributes
@@ -163,14 +127,11 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 
 	while (appWindow->isOpen())
 	{
-
-
 		std::chrono::high_resolution_clock::duration time_enlapsed = std::chrono::high_resolution_clock::now() - time;
 		float delta = time_enlapsed.count() * 0.00001; // milisekundy //// 0.0000001 - dla sekund 
 		time = std::chrono::high_resolution_clock::now();
 		//std::cout << delta << std::endl;
 
-		/*
 		sf::Event event;
 		while (appWindow->pollEvent(event))
 		{
@@ -201,11 +162,10 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 				}
 				keysPressed.erase(i);
 			}
-
 		};
 
-		*/
-		/*
+	
+		
 		if (vehicleTab != NULL && vehicleTab[0] != NULL)
 		{
 			// obsluga klawiszy znajdujacych sie na liscie keyPressed
@@ -230,20 +190,20 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 			}
 		}
 
-		*/
+		
 		//czyszczenie okna 
 		appWindow->clear();
 
 
 		// rysowanie 
-		/*if (vehicleTab != NULL)
+		if (vehicleTab != NULL)
 		{
 			for (int i = 0; i < MAX_USERS; i++)
 			{
 				if (this->vehicleTab[i] != NULL)
 					vehicleTab[i]->drowVehicle(appWindow);
 			}
-		}*/
+		}
 		
 
 		//wyswietlenie okna
