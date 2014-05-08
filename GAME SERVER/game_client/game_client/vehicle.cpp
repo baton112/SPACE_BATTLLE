@@ -1,6 +1,5 @@
 #include "vehicle.h"
 
-
 void vehicle::drowVehicle(sf::RenderWindow *appWindow)
 {
 	sf::Sprite square;
@@ -57,7 +56,6 @@ void vehicle::buttonAction(direction d, float delta)
 	}
 }
 
-
 vehicle::vehicle()
 {
 	bitMap.loadFromFile(VEHICLE_IMAGE_PATH);
@@ -65,7 +63,6 @@ vehicle::vehicle()
 	position.y = 50;
 	angle = -90;
 }
-
 
 vehicle::~vehicle()
 {

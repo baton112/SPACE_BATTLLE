@@ -22,13 +22,12 @@
 class game
 {
 private: 
-	vehicle **vehicleTab;
+	vehicle *vehicleTab[MAX_USERS];
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	
 public:
 	game();
-	game(vehicle **vtab);
 	~game();
 	void runGameLoop(sf::RenderWindow *appWindow);
 	

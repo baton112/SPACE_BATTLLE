@@ -18,26 +18,9 @@ int main()
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(60);
 	
-
-	vehicle *vehicleTab[MAX_USERS];
-	for (int i = 0; i < MAX_USERS; i++)
-	{
-		vehicleTab[i] = NULL;
-	}
-	
-	
-	
-
 	//Uruchomienie gry 
-	game game(vehicleTab);
+	game game;
 	game.runGameLoop(&window);
-
-
-	
-	
-	
-
-	
 
 
 	return 0;

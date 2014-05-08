@@ -20,23 +20,19 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	if (hStdout == INVALID_HANDLE_VALUE)
 		return 1;
 
-
 	functionParams = (ThreadParam*)lpParam;
 
 	std::cout << "Connected " << functionParams->clietntNumber << std::endl;
 
 	while (1)
 	{
-		//std::cout << functionParams->clietntNumber << std::endl;
 		char  buf;
 		//recev -- blokuje dalsze wykowyanie programu do nadejscia otrzymania czegos lub zamkniecia polaczenia
 		while (recv(functionParams->Connect, &buf, 1, 0) > 0) // przesylanie pojednym znaku 
 		{
 			printf("%c", buf);
 		}
-		//std::cout << "a";
 	}
-
 
 	return 0;
 }
@@ -122,8 +118,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		&a,          // argument to thread function 
 		0,                      // use default creation flags 
 		NULL);   // returns the thread identifier
-
-	//////////////////////
+	//////////////////////-----------/////////////////////
 
 	while (appWindow->isOpen())
 	{
@@ -204,26 +199,21 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					vehicleTab[i]->drowVehicle(appWindow);
 			}
 		}
-		
-
 		//wyswietlenie okna
 		appWindow->display();
 	}
 
 	WSACleanup();
-
 }
 
 game::game()
 {
-
+	for (int i = 0; i < MAX_USERS; i++)
+	{
+		vehicleTab[i] = NULL;
+	}
 }
 
-
-game::game(vehicle **vtab)
-{
-	this->vehicleTab = vtab;
-}
 
 
 game::~game()
