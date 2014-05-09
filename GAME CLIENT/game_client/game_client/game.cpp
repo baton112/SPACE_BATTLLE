@@ -73,47 +73,6 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	}
 	std::cout << "Wyslano " << std::endl;
 
-
-
-	//// LACZENIE W TELLNET 
-	/*
-	open ip port
-	*/
-	//for (;;)
-	//{
-
-		/*if (Connect = accept(Listen, (struct sockaddr FAR*)&client, &client_size))
-		{
-			std::cout << "CONNECTED " << std::endl;
-			vehicleTab[ConnectedClients] = new vehicle;
-			ThreadParam *a;
-			a = new ThreadParam;
-			a->MyVehicle = vehicleTab[ConnectedClients];
-			a->clietntNumber = ConnectedClients;
-			a->Connect = Connect;
-			//odpalenie watku obslugi polaczenienia przychodzacego 
-			/*threadsHandleTab[ConnectedClients] = CreateThread(
-				NULL,                   // default security attributes
-				0,                      // use default stack size  
-				ThreadFunctionRecive,       // thread function name
-				a,          // argument to thread function 
-				0,                      // use default creation flags 
-				NULL);   // returns the thread identifier*/
-		/*
-			ConnectedClients++;
-			break;
-			
-		}*/
-		/*
-		char * msg = "Beej was here!";
-		int len, bytes_sent;
-		//...
-		len = strlen(msg);
-		bytes_sent = send(Listen, msg, len, 0);
-		std::cout << "wyslano =" << bytes_sent << " " << std::endl;*/
-
-	//}
-
 	return 0;
 }
 
