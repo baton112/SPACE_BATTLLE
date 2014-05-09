@@ -14,9 +14,10 @@
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "SPACE BATTLE - CLIENT");
+	sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "SPACE BATTLE - SERVER");
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(60);
+	std::cout << "SERVER " << std::endl;
 	
 	//Uruchomienie gry 
 	game game;
