@@ -19,10 +19,13 @@
 
 #define LISTEN_PORT 50000
 
+#define UNKNOWN -1
+
 class game
 {
 private: 
 	vehicle *vehicleTab[MAX_USERS];
+	bool vehiclesActive[MAX_USERS]; //czy wyswietlac?
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	
