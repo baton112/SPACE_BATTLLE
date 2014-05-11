@@ -17,6 +17,8 @@
 
 #define MAX_USERS 4
 
+#define UNKNOWN -1
+
 #define LISTEN_PORT 50000
 
 class game
@@ -25,7 +27,8 @@ private:
 	vehicle *vehicleTab[MAX_USERS];
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
-
+	bool vehiclesActive[MAX_USERS];
+	int ID;
 public:
 	game();
 	~game();
