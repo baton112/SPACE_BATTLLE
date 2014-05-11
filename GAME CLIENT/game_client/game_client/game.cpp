@@ -1,37 +1,75 @@
 #include "game.h"
 
+
+
+
 struct ThreadParam{
-	vehicle *MyVehicle;
+	vehicle **MyVehicle;
 	SOCKET Connect;
 	int clietntNumber;
+	bool *vehActive;
+	int * ID;
 };
+
+struct message{
+	int ID;
+	double X;
+	double Y;
+	double angle;
+};
+
 
 struct netowrkThreadParams{
 	vehicle ** vtab;
+	bool *vehActive;
+	int * ID;
 };
+DWORD WINAPI ThreadSend(LPVOID lpParam);
 
 
-DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
+DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)	
 {
-	HANDLE hStdout;
-	ThreadParam *functionParams;
+	HANDLE hStdout;										//uchwyt
+	ThreadParam *functionParams;						//struktura dla pojazdu
 
-	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);			//uchwyt na standardowe wyjscie
 	if (hStdout == INVALID_HANDLE_VALUE)
 		return 1;
 
-	functionParams = (ThreadParam*)lpParam;
+	functionParams = (ThreadParam*)lpParam;				//rzutowanie parametru na strukture
 
-	std::cout << "Connected " << functionParams->clietntNumber << std::endl;
 
-	while (1)
+
+	std::cout << "Connected " << functionParams->clietntNumber << std::endl;		//wypisanie numery klienta
+
+
+	//najpierw odbieramy ID (tylko INT) i odpowiednio inicjalizujemy
+			char * buf = new char[sizeof(int)];
+	recv(functionParams->Connect, buf, sizeof(int), 0);
+			int *id =  new int; 
+			id = (int*)buf;
+			functionParams->clietntNumber = *id;
+			functionParams->vehActive[functionParams->clietntNumber] = true;
+			*functionParams->ID = *id;
+	//std::cout <<"id= " <<*id << std::endl;;
+
+
+
+	message  * msg;
+	char * buf2 = new char[(sizeof(message))];
+
+
+	while (recv(functionParams->Connect, buf2, sizeof(message), 0) == sizeof(message)) // odbieanie wiadomosci od serwera
 	{
-		char  buf;
-		//recev -- blokuje dalsze wykowyanie programu do nadejscia otrzymania czegos lub zamkniecia polaczenia
-		while (recv(functionParams->Connect, &buf, 1, 0) > 0) // przesylanie pojednym znaku 
-		{
-			printf("%c", buf);
-		}
+		msg = (message *)buf2;
+		if (msg->ID >= 0 && msg->ID <= 3){
+		functionParams->MyVehicle[msg->ID]->position.x = msg->X;					//aktualizacja pozycji
+		functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
+		(functionParams->MyVehicle[msg->ID]->angle) = (msg->angle);
+		functionParams->vehActive[msg->ID] = true;
+	}
+	else
+		std::cout << "lagi";
 	}
 
 	return 0;
@@ -42,35 +80,68 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 
 	WSAData wsaData;
 	WORD version = MAKEWORD(2, 2); ///wersja winsock
-	int error = WSAStartup(version, &wsaData);
+	int error = WSAStartup(version, &wsaData);//inicjalizacja
 	if (error != 0)
 	{
 		std::cout << "Tell the user that we could not find a usable  Winsock DLL.  " << std::endl;
 		system("pause");
 		return 0;
 	}
+	HANDLE handle, handle2;
+	SOCKADDR_IN Client;				//punkt koncowy polaczenia (struktura informacyjna)
+	Client.sin_addr.s_addr = inet_addr("127.0.0.1");		//	ustawianie paramterow tego gniazdka
+	Client.sin_family = AF_INET;							//	
+	Client.sin_port = htons(LISTEN_PORT);					//
+	int Client_size = sizeof(Client);						//pobranie rozmiaru struktury informacyjnej
+	SOCKET Connect = socket(AF_INET, SOCK_STREAM, NULL);	//autentyczna inicjalizacja socketu
+	std::cout << "laczenie.. " << std::endl;				//napisz ze zaczynasz
+	netowrkThreadParams * param = (netowrkThreadParams*)lpParam;
 
-	SOCKADDR_IN Client;
-	Client.sin_addr.s_addr = inet_addr("127.0.0.1");
-	Client.sin_family = AF_INET;
-	Client.sin_port = htons(LISTEN_PORT);
-	int Client_size = sizeof(Client);
-	SOCKET Connect = socket(AF_INET, SOCK_STREAM, NULL);
-	std::cout << "laczenie.. " << std::endl; 
+	//wiadmosc inicjalizacyjna, zeby serwer nadal klientowi ID
+	message  msg;
+	msg.ID = UNKNOWN;
+	msg.X = UNKNOWN;
+	msg.Y = UNKNOWN;
+	msg.angle = UNKNOWN;
+
 	for (;;)
 	{
 		if (connect(Connect, (SOCKADDR*)&Client, sizeof(Client)))
 		{
-			char * msg = "Beej was here!";
+			
 			int len, bytes_sent;
-			//...
-			len = strlen(msg);
-			bytes_sent = send(Connect, msg, len, 0);
-			std::cout << "wyslano =" << bytes_sent << " " << std::endl; 
+			char * x = (char*)&msg;
+			//len = strlen(msg2);
+			bytes_sent = send(Connect, x, sizeof(message), 0);		//wysylanie wiadomosci inicjalizacyjnej
 			break;
 		}
-
 	}
+
+	ThreadParam * a = new ThreadParam;
+	a->clietntNumber = UNKNOWN;
+	a->Connect = Connect;
+	a->MyVehicle = param->vtab;
+	a->vehActive = param->vehActive;
+	a->ID = param->ID;
+	
+
+	handle = CreateThread(											//watek do odbioru
+		NULL,                   // default security attributes
+		0,                      // use default stack size  
+		ThreadFunctionRecive,       // thread function name
+		a,          // argument to thread function 
+		0,                      // use default creation flags 
+		NULL);   // returns the thread identifier
+
+	handle2 = CreateThread(											//watek do wysylania
+		NULL,                   // default security attributes
+		0,                      // use default stack size  
+		ThreadSend,       // thread function name
+		a,          // argument to thread function 
+		0,                      // use default creation flags 
+		NULL);   // returns the thread identifier
+
+
 	std::cout << "Wyslano " << std::endl;
 
 	return 0;
@@ -79,6 +150,28 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 DWORD WINAPI ThreadSend(LPVOID lpParam)
 {
 
+	HANDLE hStdout;										//uchwyt
+	ThreadParam *functionParams;						//struktura dla pojazdu
+
+	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);			//uchwyt na standardowe wyjscie
+	if (hStdout == INVALID_HANDLE_VALUE)
+		return 1;
+	
+	message  * msg = new message;
+	functionParams = (ThreadParam*)lpParam;				//rzutowanie parametru na strukture
+	
+	while (true)
+	{
+		if (*functionParams->ID != UNKNOWN){			//wysylanie na serwer swoich pozycji
+			msg->angle = functionParams->MyVehicle[*functionParams->ID]->angle;
+			msg->ID = *functionParams->ID;
+			msg->X = functionParams->MyVehicle[*functionParams->ID]->position.x;
+			msg->Y = functionParams->MyVehicle[*functionParams->ID]->position.y;
+
+			send(functionParams->Connect, (char*)msg, sizeof(message), 0);
+			Sleep(100);
+		}
+	}
 	return 0;
 }
 
@@ -96,6 +189,8 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 	//////////tworzenie watku do wywsylania eventow na server 
 	netowrkThreadParams a;
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
+	a.vehActive = this->vehiclesActive;
+	a.ID = &this->ID;
 	NetworkindThreadHandle = CreateThread(
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
@@ -112,7 +207,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		time = std::chrono::high_resolution_clock::now();
 		//std::cout << delta << std::endl;
 
-		/*
+		
 		sf::Event event;
 		while (appWindow->pollEvent(event))
 		{
@@ -145,7 +240,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 			}
 		};
 
-		*/
+		
 
 		if (vehicleTab != NULL && vehicleTab[0] != NULL)
 		{
@@ -153,21 +248,21 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 			for (std::list< sf::Event>::iterator iter = keysPressed.begin(); iter != keysPressed.end(); iter++)
 			{
 				if (iter->key.code == sf::Keyboard::W)
-					vehicleTab[0]->buttonAction(direction::up, delta);
+					vehicleTab[ID]->buttonAction(direction::up, delta);
 				if (iter->key.code == sf::Keyboard::A)
-					vehicleTab[0]->buttonAction(direction::left, delta);
+					vehicleTab[ID]->buttonAction(direction::left, delta);
 				if (iter->key.code == sf::Keyboard::S)
-					vehicleTab[0]->buttonAction(direction::down, delta);
+					vehicleTab[ID]->buttonAction(direction::down, delta);
 				if (iter->key.code == sf::Keyboard::D)
-					vehicleTab[0]->buttonAction(direction::right, delta);
+					vehicleTab[ID]->buttonAction(direction::right, delta);
 				if (iter->key.code == sf::Keyboard::Up)
-					vehicleTab[0]->buttonAction(direction::up, delta);
+					vehicleTab[ID]->buttonAction(direction::up, delta);
 				if (iter->key.code == sf::Keyboard::Left)
-					vehicleTab[0]->buttonAction(direction::left, delta);
+					vehicleTab[ID]->buttonAction(direction::left, delta);
 				if (iter->key.code == sf::Keyboard::Down)
-					vehicleTab[0]->buttonAction(direction::down, delta);
+					vehicleTab[ID]->buttonAction(direction::down, delta);
 				if (iter->key.code == sf::Keyboard::Right)
-					vehicleTab[0]->buttonAction(direction::right, delta);
+					vehicleTab[ID]->buttonAction(direction::right, delta);
 			}
 		}
 
@@ -181,7 +276,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		{
 			for (int i = 0; i < MAX_USERS; i++)
 			{
-				if (this->vehicleTab[i] != NULL)
+				if (this->vehiclesActive[i])
 					vehicleTab[i]->drowVehicle(appWindow);
 			}
 		}
@@ -196,7 +291,10 @@ game::game()
 {
 	for (int i = 0; i < MAX_USERS; i++)
 	{
-		vehicleTab[i] = NULL;
+		vehicleTab[i] = new vehicle;
+		vehiclesActive[i] = false;
+		this->ID = UNKNOWN;
+
 	}
 }
 
