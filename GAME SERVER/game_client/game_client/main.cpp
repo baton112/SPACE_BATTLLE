@@ -1,10 +1,12 @@
 #include <SFML/Graphics.hpp>
 
+/*
 #define RESOLUTION_X 1280
 #define RESOLUTION_Y 720 
+*/
 
-
-
+#define RESOLUTION_X 640
+#define RESOLUTION_Y 480 
 
 //#include "vehicle.h"
 #include "game.h"

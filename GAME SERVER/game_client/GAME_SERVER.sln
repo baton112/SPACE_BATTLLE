@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game_client", "game_client\game_client.vcxproj", "{2BA5F5C4-50BA-4ACF-9542-4BC83CD8BDA9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game_SERVER", "game_client\game_client.vcxproj", "{2BA5F5C4-50BA-4ACF-9542-4BC83CD8BDA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

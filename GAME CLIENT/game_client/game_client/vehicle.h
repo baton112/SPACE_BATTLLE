@@ -17,26 +17,26 @@ enum direction
 	up,
 	down,
 	left,
-	right, 
+	right,
 	none
 };
 
 class vehicle
 {
-private: 
+private:
 	sf::Texture bitMap;
-	
 
-	const float velocity = 100; // odleglosc przebyta na sekunde
-	const float truningSpeed = 100; // ilosc stopini na sekunde
+	float velocity; // odleglosc przebyta na sekunde
+	float truningSpeed; // ilosc stopini na sekunde
 	void move(float defta, bool forward);
-	void changeAngle(float delta, bool right); 
+	void changeAngle(float delta, bool right);
 public:
 	vehicle();
 	~vehicle();
+	sf::Vector2 <double> position; ///pozycja 0,0 -- lewy gorny rog
 	void drowVehicle(sf::RenderWindow *appWindow);
 	void buttonAction(direction d, float delta);
-	sf::Vector2 <double> position; ///pozycja 0,0 -- lewy gorny rog
-	double angle; /// kat 0 - pojazd patrzy pozniomo w prawo /// kat -90 ustawiony w konstruktorze 
+
+	double angle; /// kat 0 - pojazd patrzy pozniomo w prawo /// kat -90 ustawiony w konstruktorze
 };
 

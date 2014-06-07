@@ -20,8 +20,8 @@ struct netowrkThreadParams{
 	bool *vehActive;
 };
 
-
-DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)				//wysylanie pozycji "wsyzstkich do wszystkich"
+//wysylanie pozycji "wsyzstkich do wszystkich"
+DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)				
 {
 	HANDLE hStdout;
 	ThreadParam *functionParams;
@@ -47,11 +47,12 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)				//wysylanie pozycji "wsyzs
 				send(functionParams->Connect, (char*)msg, sizeof(message), 0);
 			}
 		}
-		Sleep(80);
+		Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
 	}
 }
 
-DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)				//odbior wiadomosci od klientow
+//odbior wiadomosci od klientow
+DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)				
 {
 	HANDLE hStdout;
 	ThreadParam *functionParams;
@@ -66,8 +67,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)				//odbior wiadomosci od klie
 	char *  buf = new char[(sizeof(message))];
 	while (1)
 	{
-		
-	
+
 		//recev -- blokuje dalsze wykowyanie programu do nadejscia otrzymania czegos lub zamkniecia polaczenia
 		while (sizeof(message)==recv(functionParams->Connect, buf, sizeof(message), 0)) // przesylanie pojednym znaku 
 		{
@@ -89,6 +89,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)				//odbior wiadomosci od klie
 	return 0;
 }
 
+//obsluga polaczen
 DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 {
 	SOCKET Listen = socket(AF_INET, SOCK_STREAM, NULL);
@@ -111,10 +112,6 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	netowrkThreadParams * parametry = (netowrkThreadParams*)lpParam;
 	vehicleTab = parametry->vtab;
 
-	//// LACZENIE W TELLNET 
-	/*
-	open ip port
-	*/
 	for (;;)
 	{
 		if (Connect = accept(Listen, (struct sockaddr FAR*)&server, &server_size))
@@ -131,7 +128,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 				a->Connect = Connect;
 				a->vehActive = parametry->vehActive;
 
-																//odpalenie watku obslugi polaczenienia przychodzacego 
+				// -- odpalenie watku obslugi polaczenienia przychodzacego 
 				threadsHandleTab[ConnectedClients] = CreateThread (
 					NULL,                   // default security attributes
 					0,                      // use default stack size  
@@ -140,8 +137,9 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 					0,                      // use default creation flags 
 					NULL);   // returns the thread identifier
 
-				Sleep(100);										//czekaj, zeby zdazyl przydzieic ID (bez tego sa lagi)
+				Sleep(100);	//czekaj, zeby zdazyl przydzieic ID (bez tego sa lagi)
 
+				// -- odpalenie watku do wysylki do wsztstkich 
 				threadsHandleTab[ConnectedClients] = CreateThread(
 					NULL,                   // default security attributes
 					0,                      // use default stack size  
@@ -150,7 +148,6 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 					0,                      // use default creation flags 
 					NULL);   // returns the thread identifier
 			}
-		
 		}
 	}
 
@@ -178,10 +175,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		return ;
 	}
 
-
-
-
-	//////////tworzenie watku do oblugi polaczen 
+	//-- tworzenie watku do oblugi polaczen 
 	netowrkThreadParams a;
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;

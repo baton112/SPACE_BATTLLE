@@ -1,8 +1,6 @@
 #include "game.h"
 
 
-
-
 struct ThreadParam{
 	vehicle **MyVehicle;
 	SOCKET Connect;
@@ -18,15 +16,13 @@ struct message{
 	double angle;
 };
 
-
 struct netowrkThreadParams{
 	vehicle ** vtab;
 	bool *vehActive;
 	int * ID;
 };
-DWORD WINAPI ThreadSend(LPVOID lpParam);
 
-
+//odbieranie pozycji innych pojazdow 
 DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)	
 {
 	HANDLE hStdout;										//uchwyt
@@ -37,8 +33,6 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 		return 1;
 
 	functionParams = (ThreadParam*)lpParam;				//rzutowanie parametru na strukture
-
-
 
 	std::cout << "Connected " << functionParams->clietntNumber << std::endl;		//wypisanie numery klienta
 
@@ -75,6 +69,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	return 0;
 }
 
+//obsluga wsztstkich polaczenie 
 DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 {
 
@@ -89,7 +84,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	}
 	HANDLE handle, handle2;
 	SOCKADDR_IN Client;				//punkt koncowy polaczenia (struktura informacyjna)
-	Client.sin_addr.s_addr = inet_addr("127.0.0.1");		//	ustawianie paramterow tego gniazdka
+	Client.sin_addr.s_addr = inet_addr(SERVER_IP);		//	ustawianie paramterow tego gniazdka
 	Client.sin_family = AF_INET;							//	
 	Client.sin_port = htons(LISTEN_PORT);					//
 	int Client_size = sizeof(Client);						//pobranie rozmiaru struktury informacyjnej
@@ -124,8 +119,8 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	a->vehActive = param->vehActive;
 	a->ID = param->ID;
 	
-
-	handle = CreateThread(											//watek do odbioru
+	//watek do odbioru
+	handle = CreateThread(											
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
 		ThreadFunctionRecive,       // thread function name
@@ -133,7 +128,8 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 		0,                      // use default creation flags 
 		NULL);   // returns the thread identifier
 
-	handle2 = CreateThread(											//watek do wysylania
+	//watek do wysylania
+	handle2 = CreateThread(											
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
 		ThreadSend,       // thread function name
@@ -147,6 +143,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	return 0;
 }
 
+//watek wysylania eventow 
 DWORD WINAPI ThreadSend(LPVOID lpParam)
 {
 
@@ -160,6 +157,8 @@ DWORD WINAPI ThreadSend(LPVOID lpParam)
 	message  * msg = new message;
 	functionParams = (ThreadParam*)lpParam;				//rzutowanie parametru na strukture
 	
+
+	//zamienic na wysylanie eventa 
 	while (true)
 	{
 		if (*functionParams->ID != UNKNOWN){			//wysylanie na serwer swoich pozycji
@@ -169,12 +168,11 @@ DWORD WINAPI ThreadSend(LPVOID lpParam)
 			msg->Y = functionParams->MyVehicle[*functionParams->ID]->position.y;
 
 			send(functionParams->Connect, (char*)msg, sizeof(message), 0);
-			Sleep(100);
+			Sleep(100/60); // magiczny sleep usuwajacy lagi 
 		}
 	}
 	return 0;
 }
-
 
 void game::runGameLoop(sf::RenderWindow *appWindow)
 {
@@ -294,11 +292,8 @@ game::game()
 		vehicleTab[i] = new vehicle;
 		vehiclesActive[i] = false;
 		this->ID = UNKNOWN;
-
 	}
 }
-
-
 
 game::~game()
 {
