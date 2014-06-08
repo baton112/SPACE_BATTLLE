@@ -34,7 +34,8 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 
 	functionParams = (ThreadParam*)lpParam;				//rzutowanie parametru na strukture
 
-	
+	std::cout << "Connected " << functionParams->clietntNumber << std::endl;		//wypisanie numery klienta
+
 
 	//najpierw odbieramy ID (tylko INT) i odpowiednio inicjalizujemy
 			char * buf = new char[sizeof(int)];
@@ -44,24 +45,25 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 			functionParams->clietntNumber = *id;
 			functionParams->vehActive[functionParams->clietntNumber] = true;
 			*functionParams->ID = *id;
+	//std::cout <<"id= " <<*id << std::endl;;
 
-			std::cout << "Przypisano ID klienta = " << functionParams->clietntNumber << std::endl;		//wypisanie numery klienta
+
 
 	message  * msg;
 	char * buf2 = new char[(sizeof(message))];
 
-	//odbieranie pozycji od servera
+
 	while (recv(functionParams->Connect, buf2, sizeof(message), 0) == sizeof(message)) // odbieanie wiadomosci od serwera
 	{
 		msg = (message *)buf2;
-		if (msg->ID >= 0 && msg->ID <= MAX_USERS-1)
-		{
-			functionParams->MyVehicle[msg->ID]->position.x = msg->X;					//aktualizacja pozycji
-			functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
-			functionParams->MyVehicle[msg->ID]->angle = msg->angle;
-			functionParams->vehActive[msg->ID] = true;
-		}
-		else std::cout << "lagi";
+		if (msg->ID >= 0 && msg->ID <= 3){
+		functionParams->MyVehicle[msg->ID]->position.x = msg->X;					//aktualizacja pozycji
+		functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
+		(functionParams->MyVehicle[msg->ID]->angle) = (msg->angle);
+		functionParams->vehActive[msg->ID] = true;
+	}
+	else
+		std::cout << "lagi";
 	}
 
 	return 0;
