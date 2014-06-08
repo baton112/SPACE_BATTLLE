@@ -26,8 +26,8 @@ class vehicle
 private: 
 	sf::Texture bitMap;
 	 
-	const float velocity = 100; // odleglosc przebyta na sekunde
-	const float truningSpeed = 100; // ilosc stopini na sekunde
+	float velocity ; // odleglosc przebyta na sekunde
+	float truningSpeed ; // ilosc stopini na sekunde
 	void move(float defta, bool forward);
 	void changeAngle(float delta, bool right); 
 public:
