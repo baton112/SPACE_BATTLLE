@@ -21,52 +21,18 @@
 
 #define UNKNOWN -1
 
-//wysylanie pozycji "wsyzstkich do wszystkich"
-DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam);
-//odbior wiadomosci od klientow
-DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam);
-//obsluga polaczen
-DWORD WINAPI ThreadHandleConnections(LPVOID lpParam);
-
-struct EventMassage{
-	int ID;
-	sf::Event keysPressed;
-};
-
 class game
 {
 private: 
 	vehicle *vehicleTab[MAX_USERS];
 	bool vehiclesActive[MAX_USERS]; //czy wyswietlac?
 	void loadTextures();
-	std::list< EventMassage> keysPressedClientList;
+	std::list< sf::Event> keysPressed;
 	
 public:
 	game();
 	~game();
-	void addEvent();
 	void runGameLoop(sf::RenderWindow *appWindow);
 	
 };
 
-struct ThreadParam{
-	vehicle **MyVehicle;
-	std::list< EventMassage> *keysPressedClientList;
-	SOCKET Connect;
-	int clietntNumber;
-	bool * vehActive;
-};
-
-struct message{
-	int ID;
-	double X;
-	double Y;
-	double angle;
-};
-
-
-struct netowrkThreadParams{
-	vehicle ** vtab;
-	std::list< EventMassage> *keysPressedClientList;
-	bool *vehActive;
-};

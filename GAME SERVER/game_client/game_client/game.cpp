@@ -1,5 +1,24 @@
 #include "game.h"
 //********************************************* SERWER 
+struct ThreadParam{
+	vehicle **MyVehicle;
+	SOCKET Connect;
+	int clietntNumber;
+	bool * vehActive;
+};
+
+struct message{
+	int ID;
+	double X;
+	double Y;
+	double angle;
+};
+
+
+struct netowrkThreadParams{
+	vehicle ** vtab;
+	bool *vehActive;
+};
 
 //wysylanie pozycji "wsyzstkich do wszystkich"
 DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)				
@@ -13,7 +32,7 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 
 	functionParams = (ThreadParam*)lpParam;
 	message * msg = new message;
-	std::cout << "Connected " << functionParams->clietntNumber << "wysylanie czegos "<< std::endl;
+	std::cout << "Connected " << functionParams->clietntNumber << std::endl;
 	char *  buf = new char[(sizeof(message))];
 	while (true)
 	{
@@ -29,7 +48,6 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 			}
 		}
 		Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
-		
 	}
 }
 
@@ -44,37 +62,25 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 		return 1;
 
 	functionParams = (ThreadParam*)lpParam;
-	//message * msg;
+	message * msg;
 	std::cout << "Connected " << functionParams->clietntNumber << std::endl;
-	std::cout << "Odbieram dane od " << functionParams->clietntNumber << std::endl;
-	EventMassage *msg;
-	char *  buf = new char[(sizeof(EventMassage))];
-
-	//recev -- blokuje dalsze wykowyanie programu do nadejscia otrzymania czegos lub zamkniecia 
-	for (;;)
+	char *  buf = new char[(sizeof(message))];
+	//recev -- blokuje dalsze wykowyanie programu do nadejscia otrzymania czegos lub zamkniecia polaczenia
+	while (sizeof(message)==recv(functionParams->Connect, buf, sizeof(message), 0)) // przesylanie pojednym znaku 
 	{
-		while (sizeof(EventMassage) == recv(functionParams->Connect, buf, sizeof(EventMassage), 0)) // przesylanie pojednym znaku 
-		{
-
-			//-- eventMassage
-			msg = (EventMassage*)buf;
-			if (msg->ID == UNKNOWN)
-			{											//jesli przyslal niewazne ID, (podłączył się), to odeslij mu ID tylko ID
+			msg = (message*)buf;
+			if (msg->ID == UNKNOWN){											//jesli przyslal niewazne ID, (podłączył się), to odeslij mu ID tylko ID
 				msg->ID = functionParams->clietntNumber;
 				send(functionParams->Connect, (char*)&msg->ID, sizeof(int), 0);
 			}
-			else
-			{
-				//functionParams->keysPressedClientList->push_front(*msg);
-
-				std::cout << "Odebrano " << msg->ID << " klawisz " << msg->keysPressed.key.code << std::endl;;
+			else{
+				functionParams->MyVehicle[msg->ID]->position.x = msg->X;		//zapisywanie odebranyc pozycji
+				functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
+				functionParams->MyVehicle[msg->ID]->angle = msg->angle;
 			}
-
-		}
 	}
 	
-	
-	std::cout << "zakonczono polaczenie !!!!!" << std::endl;
+	std::cout << "zakonczono polaczenie";
 
 	return 0;
 }
@@ -107,7 +113,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 		if (Connect = accept(Listen, (struct sockaddr FAR*)&server, &server_size))
 		{
 			if (ConnectedClients < MAX_USERS-1){
-				std::cout << "CONNECTED - watek obslugi polaczen" << std::endl;
+				std::cout << "CONNECTED " << std::endl;
 				ConnectedClients++;
 				parametry->vehActive[ConnectedClients] =  true;
 
@@ -117,7 +123,6 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 				a->clietntNumber = ConnectedClients;
 				a->Connect = Connect;
 				a->vehActive = parametry->vehActive;
-				a->keysPressedClientList = parametry->keysPressedClientList;
 
 				// -- odpalenie watku obslugi polaczenienia przychodzacego 
 				threadsHandleTab[ConnectedClients] = CreateThread (
@@ -170,7 +175,6 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 	netowrkThreadParams a;
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;
-	a.keysPressedClientList = &this->keysPressedClientList;
 	NetworkindThreadHandle = CreateThread(
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
@@ -191,7 +195,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		while (appWindow->pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
-				appWindow->close();/*
+				appWindow->close();
 			if (event.type == sf::Event::KeyPressed)
 			{
 				// wcisniecie klawisza dodaje go do listy klawiszy wcisnietych 
@@ -216,11 +220,11 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 						i = iter;
 				}
 				keysPressed.erase(i);
-			}*/
+			}
 		};
-		
+
 	
-				/*
+		
 		if (vehicleTab != NULL && vehicleTab[0] != NULL)
 		{
 			// obsluga klawiszy znajdujacych sie na liscie keyPressed
@@ -244,7 +248,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					vehicleTab[0]->buttonAction(direction::right, delta);
 			}
 		}
-		*/
+
 		
 		//czyszczenie okna 
 		appWindow->clear();

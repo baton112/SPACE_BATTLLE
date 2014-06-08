@@ -1,5 +1,27 @@
 #include "game.h"
 
+
+struct ThreadParam{
+	vehicle **MyVehicle;
+	SOCKET Connect;
+	int clietntNumber;
+	bool *vehActive;
+	int * ID;
+};
+
+struct message{
+	int ID;
+	double X;
+	double Y;
+	double angle;
+};
+
+struct netowrkThreadParams{
+	vehicle ** vtab;
+	bool *vehActive;
+	int * ID;
+};
+
 //odbieranie pozycji innych pojazdow 
 DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)	
 {
@@ -15,15 +37,15 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	
 
 	//najpierw odbieramy ID (tylko INT) i odpowiednio inicjalizujemy
-	char * buf = new char[sizeof(int)];
+			char * buf = new char[sizeof(int)];
 	recv(functionParams->Connect, buf, sizeof(int), 0);
-	int *id =  new int; 
-	id = (int*)buf;
-	functionParams->clietntNumber = *id;
-	functionParams->vehActive[functionParams->clietntNumber] = true;
-	*functionParams->ID = *id;
+			int *id =  new int; 
+			id = (int*)buf;
+			functionParams->clietntNumber = *id;
+			functionParams->vehActive[functionParams->clietntNumber] = true;
+			*functionParams->ID = *id;
 
-	std::cout << "Przypisano ID klienta = " << functionParams->clietntNumber << std::endl;		//wypisanie numery klienta
+			std::cout << "Przypisano ID klienta = " << functionParams->clietntNumber << std::endl;		//wypisanie numery klienta
 
 	message  * msg;
 	char * buf2 = new char[(sizeof(message))];
@@ -94,7 +116,6 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	a->MyVehicle = param->vtab;
 	a->vehActive = param->vehActive;
 	a->ID = param->ID;
-	a->keysPressed = param->keysPressed;
 	
 	//watek do odbioru
 	handle = CreateThread(											
@@ -131,27 +152,20 @@ DWORD WINAPI ThreadSend(LPVOID lpParam)
 	if (hStdout == INVALID_HANDLE_VALUE)
 		return 1;
 	
-	//message  * msg = new message;
-	EventMassage *msg = new EventMassage;
+	message  * msg = new message;
 	functionParams = (ThreadParam*)lpParam;				//rzutowanie parametru na strukture
 	
 
 	//zamienic na wysylanie eventa 
 	while (true)
 	{
-		//wysylanie na serwer swoich pozycji
-		//std::cout << functionParams->keysPressed->empty() << std::endl;
-		if (*functionParams->ID != UNKNOWN && !functionParams->keysPressed->empty())
-		{
-			//-- nowa massage - event ------
+		if (*functionParams->ID != UNKNOWN){			//wysylanie na serwer swoich pozycji
+			msg->angle = functionParams->MyVehicle[*functionParams->ID]->angle;
 			msg->ID = *functionParams->ID;
-			
-			msg->keysPressed = *functionParams->keysPressed->begin();
-			std::cout<< "Wyslano " << msg->keysPressed.key.code << " ID " << msg->ID << std::endl;
-			send(functionParams->Connect, (char*)msg, sizeof(EventMassage), 0); 
-			functionParams->keysPressed->pop_front();
-			
+			msg->X = functionParams->MyVehicle[*functionParams->ID]->position.x;
+			msg->Y = functionParams->MyVehicle[*functionParams->ID]->position.y;
 
+			send(functionParams->Connect, (char*)msg, sizeof(message), 0);
 			Sleep(100/60); // magiczny sleep usuwajacy lagi 
 		}
 	}
@@ -173,7 +187,6 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;
 	a.ID = &this->ID;
-	a.keysPressed = &(this->keysPressed);
 	NetworkindThreadHandle = CreateThread(
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
@@ -182,7 +195,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		0,                      // use default creation flags 
 		NULL);   // returns the thread identifier
 	//////////////////////-----------/////////////////////
-	std::cout << "przekazano liste " <<a.keysPressed->empty() << std::endl;
+
 	while (appWindow->isOpen())
 	{
 		std::chrono::high_resolution_clock::duration time_enlapsed = std::chrono::high_resolution_clock::now() - time;
@@ -208,13 +221,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 							isOnList = true;
 					}
 				}
-				if (!isOnList)
-				{
-					keysPressed.push_front(event);
-					std::cout << "dodano event do listy" << std::endl;
-					//std::cout << a.keysPressed->empty() << std::endl;
-				}
-
+				if (!isOnList) keysPressed.push_front(event);
 			}
 			if (event.type == sf::Event::KeyReleased)
 			{
@@ -225,12 +232,12 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					if (iter->key.code == event.key.code)
 						i = iter;
 				}
-				//keysPressed.erase(i);
+				keysPressed.erase(i);
 			}
 		};
 
 		
-		/*
+
 		if (vehicleTab != NULL && vehicleTab[0] != NULL)
 		{
 			// obsluga klawiszy znajdujacych sie na liscie keyPressed
@@ -253,7 +260,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 				if (iter->key.code == sf::Keyboard::Right)
 					vehicleTab[ID]->buttonAction(direction::right, delta);
 			}
-		}*/
+		}
 
 
 		//czyszczenie okna 
