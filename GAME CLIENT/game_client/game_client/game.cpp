@@ -37,6 +37,8 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 			functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
 			functionParams->MyVehicle[msg->ID]->angle = msg->angle;
 			functionParams->vehActive[msg->ID] = true;
+			std::cout << "Odbieram XYYYYY" << msg->X <<" " <<  msg->Y << " " << msg->angle <<" " << msg->ID << std::endl;
+
 		}
 		else std::cout << "lagi";
 	}
@@ -195,66 +197,13 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 				appWindow->close();
 			if (event.type == sf::Event::KeyPressed)
 			{
-				// wcisniecie klawisza dodaje go do listy klawiszy wcisnietych 
-				/*
-				bool isOnList = false;
-				if (!keysPressed.empty())
-				{
-					for (std::list< sf::Event>::iterator iter = keysPressed.begin(); iter != keysPressed.end(); iter++)
-					{
-						if (iter->key.code == event.key.code)
-							isOnList = true;
-					}
-				}
-				if (!isOnList)
-				{
-					keysPressed.push_front(event);
-					std::cout << "dodano event do listy" << std::endl;
-					//std::cout << a.keysPressed->empty() << std::endl;
-				}*/
 				keysPressed.push_front(event);
-
 			}
 			if (event.type == sf::Event::KeyReleased)
 			{
-				//usuwanie z listy klawisza ktory zostal puszczony 
-				/*std::list< sf::Event>::iterator i;
-				for (std::list< sf::Event>::iterator iter = keysPressed.begin(); iter != keysPressed.end(); iter++)
-				{
-					if (iter->key.code == event.key.code)
-						i = iter;
-				}
-				//keysPressed.erase(i);
-				*/
 				keysPressed.push_front(event);
 			}
 		};
-
-		
-		/*
-		if (vehicleTab != NULL && vehicleTab[0] != NULL)
-		{
-			// obsluga klawiszy znajdujacych sie na liscie keyPressed
-			for (std::list< sf::Event>::iterator iter = keysPressed.begin(); iter != keysPressed.end(); iter++)
-			{
-				if (iter->key.code == sf::Keyboard::W)
-					vehicleTab[ID]->buttonAction(direction::up, delta);
-				if (iter->key.code == sf::Keyboard::A)
-					vehicleTab[ID]->buttonAction(direction::left, delta);
-				if (iter->key.code == sf::Keyboard::S)
-					vehicleTab[ID]->buttonAction(direction::down, delta);
-				if (iter->key.code == sf::Keyboard::D)
-					vehicleTab[ID]->buttonAction(direction::right, delta);
-				if (iter->key.code == sf::Keyboard::Up)
-					vehicleTab[ID]->buttonAction(direction::up, delta);
-				if (iter->key.code == sf::Keyboard::Left)
-					vehicleTab[ID]->buttonAction(direction::left, delta);
-				if (iter->key.code == sf::Keyboard::Down)
-					vehicleTab[ID]->buttonAction(direction::down, delta);
-				if (iter->key.code == sf::Keyboard::Right)
-					vehicleTab[ID]->buttonAction(direction::right, delta);
-			}
-		}*/
 
 
 		//czyszczenie okna 
