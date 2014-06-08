@@ -44,7 +44,6 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 		return 1;
 
 	functionParams = (ThreadParam*)lpParam;
-	//message * msg;
 	std::cout << "Connected " << functionParams->clietntNumber << std::endl;
 	std::cout << "Odbieram dane od " << functionParams->clietntNumber << std::endl;
 	EventMassage *msg;
@@ -55,7 +54,6 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	{
 		while (sizeof(EventMassage) == recv(functionParams->Connect, buf, sizeof(EventMassage), 0)) // przesylanie pojednym znaku 
 		{
-
 			//-- eventMassage
 			msg = (EventMassage*)buf;
 			if (msg->ID == UNKNOWN)
@@ -65,15 +63,38 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 			}
 			else
 			{
-				//functionParams->keysPressedClientList->push_front(*msg);
-
-				std::cout << "Odebrano " << msg->ID << " klawisz " << msg->keysPressed.key.code << std::endl;;
+				if (msg->keysPressed.type == sf::Event::KeyPressed) // dodanie odebranego klawisza do listy - bez powtorek
+				{
+					bool isOnList = false;
+					if (!functionParams->keysPressedClientList->empty())
+					{
+						for (std::list<EventMassage>::iterator iter = functionParams->keysPressedClientList->begin();
+							iter != functionParams->keysPressedClientList->end(); iter++)
+						{
+							if (iter->keysPressed.key.code == msg->keysPressed.key.code && msg->ID == iter->ID)
+								isOnList = true;
+						}
+					}
+					if (!isOnList) functionParams->keysPressedClientList->push_front(*msg);
+				}
+				else if (msg->keysPressed.type == sf::Event::KeyReleased) // usuniecie klawisza z listy 
+				{
+					//usuwanie z listy klawisza ktory zostal puszczony
+					std::list< EventMassage>::iterator i;
+					for (std::list<EventMassage>::iterator iter = functionParams->keysPressedClientList->begin(); 
+						iter != functionParams->keysPressedClientList->end(); iter++)
+					{
+						if (iter->keysPressed.key.code == msg->keysPressed.key.code && iter->ID == msg->ID)
+							i = iter;
+					}
+					functionParams->keysPressedClientList->erase(i);
+				}
+				//std::cout << "Odebrano " << msg->ID << " klawisz " << msg->keysPressed.key.code << std::endl;;
 			}
 
 		}
 	}
-	
-	
+
 	std::cout << "zakonczono polaczenie !!!!!" << std::endl;
 
 	return 0;
@@ -218,37 +239,33 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 				keysPressed.erase(i);
 			}*/
 		};
-		
-	
-				/*
-		if (vehicleTab != NULL && vehicleTab[0] != NULL)
+
+		//-- PRZESUWANIE POJAZDOW 
 		{
-			// obsluga klawiszy znajdujacych sie na liscie keyPressed
-			for (std::list< sf::Event>::iterator iter = keysPressed.begin(); iter != keysPressed.end(); iter++)
+			for (std::list<EventMassage>::iterator iter = keysPressedClientList.begin(); iter != keysPressedClientList.end(); iter++)
 			{
-				if (iter->key.code == sf::Keyboard::W)
-					vehicleTab[0]->buttonAction(direction::up, delta);
-				if (iter->key.code == sf::Keyboard::A)
-					vehicleTab[0]->buttonAction(direction::left, delta);
-				if (iter->key.code == sf::Keyboard::S)
-					vehicleTab[0]->buttonAction(direction::down, delta);
-				if (iter->key.code == sf::Keyboard::D)
-					vehicleTab[0]->buttonAction(direction::right, delta);
-				if (iter->key.code == sf::Keyboard::Up)
-					vehicleTab[0]->buttonAction(direction::up, delta);
-				if (iter->key.code == sf::Keyboard::Left)
-					vehicleTab[0]->buttonAction(direction::left, delta);
-				if (iter->key.code == sf::Keyboard::Down)
-					vehicleTab[0]->buttonAction(direction::down, delta);
-				if (iter->key.code == sf::Keyboard::Right)
-					vehicleTab[0]->buttonAction(direction::right, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::W)
+					vehicleTab[iter->ID]->buttonAction(direction::up, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::A)
+					vehicleTab[iter->ID]->buttonAction(direction::left, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::S)
+					vehicleTab[iter->ID]->buttonAction(direction::down, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::D)
+					vehicleTab[iter->ID]->buttonAction(direction::right, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::Up)
+					vehicleTab[iter->ID]->buttonAction(direction::up, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::Left)
+					vehicleTab[iter->ID]->buttonAction(direction::left, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::Down)
+					vehicleTab[iter->ID]->buttonAction(direction::down, delta);
+				if (iter->keysPressed.key.code == sf::Keyboard::Right)
+					vehicleTab[iter->ID]->buttonAction(direction::right, delta);
+
 			}
 		}
-		*/
 		
 		//czyszczenie okna 
 		appWindow->clear();
-
 
 		// rysowanie 
 		if (vehicleTab != NULL)
@@ -274,8 +291,6 @@ game::game()
 		vehiclesActive[i] = false;
 	}
 }
-
-
 
 game::~game()
 {

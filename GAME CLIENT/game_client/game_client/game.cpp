@@ -12,7 +12,6 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 
 	functionParams = (ThreadParam*)lpParam;				//rzutowanie parametru na strukture
 
-	
 
 	//najpierw odbieramy ID (tylko INT) i odpowiednio inicjalizujemy
 	char * buf = new char[sizeof(int)];
@@ -24,7 +23,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	*functionParams->ID = *id;
 
 	std::cout << "Przypisano ID klienta = " << functionParams->clietntNumber << std::endl;		//wypisanie numery klienta
-
+	std::cout << "Odbieram pozycje samolocikow" << std::endl;
 	message  * msg;
 	char * buf2 = new char[(sizeof(message))];
 
@@ -139,18 +138,16 @@ DWORD WINAPI ThreadSend(LPVOID lpParam)
 	//zamienic na wysylanie eventa 
 	while (true)
 	{
-		//wysylanie na serwer swoich pozycji
-		//std::cout << functionParams->keysPressed->empty() << std::endl;
 		if (*functionParams->ID != UNKNOWN && !functionParams->keysPressed->empty())
 		{
 			//-- nowa massage - event ------
 			msg->ID = *functionParams->ID;
-			
 			msg->keysPressed = *functionParams->keysPressed->begin();
-			std::cout<< "Wyslano " << msg->keysPressed.key.code << " ID " << msg->ID << std::endl;
-			send(functionParams->Connect, (char*)msg, sizeof(EventMassage), 0); 
-			functionParams->keysPressed->pop_front();
 			
+			send(functionParams->Connect, (char*)msg, sizeof(EventMassage), 0); 
+			std::cout << "Wyslano " << msg->keysPressed.key.code << " ID " << msg->ID << std::endl;
+
+			functionParams->keysPressed->pop_front(); // usuniecie z listy klienta wcisnietych klawiszy
 
 			Sleep(100/60); // magiczny sleep usuwajacy lagi 
 		}
@@ -199,6 +196,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 			if (event.type == sf::Event::KeyPressed)
 			{
 				// wcisniecie klawisza dodaje go do listy klawiszy wcisnietych 
+				/*
 				bool isOnList = false;
 				if (!keysPressed.empty())
 				{
@@ -213,19 +211,22 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					keysPressed.push_front(event);
 					std::cout << "dodano event do listy" << std::endl;
 					//std::cout << a.keysPressed->empty() << std::endl;
-				}
+				}*/
+				keysPressed.push_front(event);
 
 			}
 			if (event.type == sf::Event::KeyReleased)
 			{
 				//usuwanie z listy klawisza ktory zostal puszczony 
-				std::list< sf::Event>::iterator i;
+				/*std::list< sf::Event>::iterator i;
 				for (std::list< sf::Event>::iterator iter = keysPressed.begin(); iter != keysPressed.end(); iter++)
 				{
 					if (iter->key.code == event.key.code)
 						i = iter;
 				}
 				//keysPressed.erase(i);
+				*/
+				keysPressed.push_front(event);
 			}
 		};
 
