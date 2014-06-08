@@ -19,11 +19,7 @@
 
 #define UNKNOWN -1
 
-#define SERVER_IP "127.0.0.1"
-#define LISTEN_PORT 50100
-
-DWORD WINAPI ThreadSend(LPVOID lpParam);
-
+#define LISTEN_PORT 50000
 
 class game
 {

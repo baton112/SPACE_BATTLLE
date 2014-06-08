@@ -62,8 +62,6 @@ vehicle::vehicle()
 	position.x = 50;
 	position.y = 50;
 	angle = -90;
-	velocity = 100;
-	truningSpeed = 100;
 }
 
 vehicle::~vehicle()
