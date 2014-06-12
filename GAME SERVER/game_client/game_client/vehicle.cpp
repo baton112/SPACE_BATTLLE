@@ -56,6 +56,23 @@ void vehicle::buttonAction(direction d, float delta)
 	}
 }
 
+bool vehicle::checkCoin(coin *c)
+{
+	if (sqrt((c->position.x - this->position.x) * (c->position.x - this->position.x )
+		+ (c->position.y - this->position.y )* (c->position.y - this->position.y)) < (VEHICLE_RADIAS + COIN_RADIUS))
+		return true; 
+	else return false;
+}
+
+void vehicle::drowVehicleCircle(sf::RenderWindow *appWindow)
+{
+	sf::CircleShape circle(VEHICLE_RADIAS); // tworzymy kolo
+	circle.setPosition(this->position.x - VEHICLE_SIZE_X/2, this->position.y - VEHICLE_SIZE_X/2); // a teraz ustawiamy jego pozycje
+	circle.setFillColor(sf::Color::Yellow);
+	appWindow->draw(circle);
+
+}
+
 vehicle::vehicle()
 {
 	bitMap.loadFromFile(VEHICLE_IMAGE_PATH);
