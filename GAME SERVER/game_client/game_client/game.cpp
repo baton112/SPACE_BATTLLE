@@ -164,7 +164,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 
 	HANDLE NetworkindThreadHandle;
 
-
+	bool coinWasCreated = false;
 	this->vehiclesActive[0]=true;
 
 	int error = WSAStartup(version, &wsaData);
@@ -227,8 +227,8 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 			}
 		};
 
-	
-		
+
+
 		if (vehicleTab != NULL && vehicleTab[0] != NULL)
 		{
 			// obsluga klawiszy znajdujacych sie na liscie keyPressed
@@ -252,21 +252,48 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					vehicleTab[0]->buttonAction(direction::right, delta);
 			}
 		}
+		if (c == NULL && COIN_RADIUS)
+		{
+			coinWasCreated = true;
+			c = new coin(200, 200);
+		}
+
+		//sprawdzanie kolizji z moneta 
+		if (c != NULL && vehicleTab != NULL)
+		{
+			for (int i = 0; i < MAX_USERS; i++)
+			{
+				if (vehicleTab[i] != NULL && vehiclesActive[i] == true)
+				{
+					if (vehicleTab[i]->checkCoin(c))
+					{
+						delete c;
+						c = NULL;
+						break;
+					}	
+				}
+			}
+		}
 
 		
 		//czyszczenie okna 
 		appWindow->clear();
 
 		// rysowanie 
-		/*if (vehicleTab != NULL)
+		if (vehicleTab != NULL)
 		{
 			for (int i = 0; i < MAX_USERS; i++)
 			{
 				if (this->vehiclesActive[i])
+				{
+					vehicleTab[i]->drowVehicleCircle(appWindow);
 					vehicleTab[i]->drowVehicle(appWindow);
+					
+				}
 			}
-		}*/
+		}
 		drowScore(appWindow);
+		if(c !=NULL) c->drowCoin(appWindow); 
 		//wyswietlenie okna
 		appWindow->display();
 	}
@@ -307,6 +334,7 @@ game::game()
 		this->playerScore[i] = 0;
 	}
 	loadFont();
+	c = NULL;
 }
 
 void game::loadFont()

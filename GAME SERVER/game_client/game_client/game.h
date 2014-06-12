@@ -6,6 +6,7 @@
 #include <iostream>
 #include <chrono>
 #include <sstream>
+#include "coin.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
@@ -31,6 +32,7 @@ private:
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	sf::Font font;
+	coin *c;
 
 	
 public:

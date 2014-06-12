@@ -83,11 +83,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="coin.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vehicle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="coin.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="vehicle.h" />
   </ItemGroup>
