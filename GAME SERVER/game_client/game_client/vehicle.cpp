@@ -9,12 +9,6 @@ void vehicle::drowVehicle(sf::RenderWindow *appWindow)
 	square.rotate(angle+90.0);
 	square.setPosition(position.x,position.y);
 	appWindow->draw(square);
-
-	//rysowanie wszystkich pociskow 
-	for (int i = 0; i < MAX_SHOTS; i++)
-	{
-		if(bulletTab[i] != NULL) bulletTab[i]->drow(appWindow);
-	}
 }
 
 void vehicle::move(float delta, bool forward)
@@ -28,15 +22,6 @@ void vehicle::move(float delta, bool forward)
 	{
 		position.y -= velocity*delta/100 * sin(angle*M_PI / 180);
 		position.x -= velocity*delta/100 * cos(angle*M_PI / 180);
-	}
-
-}
-
-void vehicle::moveBullets(float delta)
-{
-	for (int i = 0; i < MAX_SHOTS; i++)
-	{
-		if (bulletTab[i] != NULL) bulletTab[i]->move(delta);
 	}
 }
 
@@ -64,11 +49,6 @@ void vehicle::buttonAction(direction d, float delta)
 	case right:
 		this->changeAngle(delta, true);
 		break;
-	case fire:
-		this->bulletTab[shotsFired] = new Bullet(this->position, this->angle);
-		this->shotsFired += 1;
-		this->shotsFired %= MAX_SHOTS;
-		break;
 	case none:
 		break;
 	default:
@@ -84,14 +64,8 @@ vehicle::vehicle()
 	angle = -90;
 	velocity = 100;
 	truningSpeed = 100;
-	shotsFired = 0;
-	for (int i = 0; i < MAX_SHOTS; i++)
-	{
-		bulletTab[i] = NULL;
-	}
 }
 
 vehicle::~vehicle()
 {
 }
-

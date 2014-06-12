@@ -250,13 +250,8 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					vehicleTab[0]->buttonAction(direction::down, delta);
 				if (iter->key.code == sf::Keyboard::Right)
 					vehicleTab[0]->buttonAction(direction::right, delta);
-				if (iter->key.code == sf::Keyboard::Space)
-					vehicleTab[0]->buttonAction(direction::fire, delta);
 			}
-			//-- tymczasowe pociski
-			vehicleTab[0]->moveBullets(delta); 
 		}
-
 
 		
 		//czyszczenie okna 
