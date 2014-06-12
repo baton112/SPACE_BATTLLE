@@ -5,6 +5,7 @@
 #include <list>
 #include <iostream>
 #include <chrono>
+#include <sstream>
 
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
@@ -25,14 +26,19 @@ class game
 {
 private: 
 	vehicle *vehicleTab[MAX_USERS];
+	int playerScore[MAX_USERS];
 	bool vehiclesActive[MAX_USERS]; //czy wyswietlac?
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
+	sf::Font font;
+
 	
 public:
 	game();
 	~game();
 	void runGameLoop(sf::RenderWindow *appWindow);
+	void drowScore(sf::RenderWindow *appWindow);
+	void loadFont();
 	
 };
 

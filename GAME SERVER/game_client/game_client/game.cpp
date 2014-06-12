@@ -257,21 +257,45 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		//czyszczenie okna 
 		appWindow->clear();
 
-
 		// rysowanie 
-		if (vehicleTab != NULL)
+		/*if (vehicleTab != NULL)
 		{
 			for (int i = 0; i < MAX_USERS; i++)
 			{
 				if (this->vehiclesActive[i])
 					vehicleTab[i]->drowVehicle(appWindow);
 			}
-		}
+		}*/
+		drowScore(appWindow);
 		//wyswietlenie okna
 		appWindow->display();
 	}
 
 	WSACleanup();
+}
+
+void game::drowScore(sf::RenderWindow *appWindow)
+{
+	sf::Text text[MAX_USERS];
+	for (int i = 0; i < MAX_USERS; i++)
+	{
+		text[i].setCharacterSize(15);
+		text[i].setPosition(10,10);
+		text[i].setFont(font);
+		text[i].setColor(sf::Color::Red);
+		text[i].setStyle(sf::Text::Bold);
+		text[i].setPosition(appWindow->getSize().x - 150, (20*i));
+		sf::Text sfText;
+		std::ostringstream ss;
+		ss << "Player ";
+		ss << i;
+		ss << " "; 
+		ss << playerScore[i];
+		text[i].setString(ss.str());
+		appWindow->draw(text[i]);
+	}
+	
+	
 }
 
 game::game()
@@ -280,9 +304,20 @@ game::game()
 	{
 		vehicleTab[i] = new vehicle();
 		vehiclesActive[i] = false;
+		this->playerScore[i] = 0;
 	}
+	loadFont();
 }
 
+void game::loadFont()
+{
+	// Load it from a file
+	if (!font.loadFromFile("SCRATCHM.TTF"))
+	{
+		// error...
+		std::cout << "Nie wczytano czcionki" << std::endl;
+	}
+}
 
 
 game::~game()
