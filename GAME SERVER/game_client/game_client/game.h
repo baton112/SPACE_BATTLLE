@@ -23,6 +23,8 @@
 
 #define UNKNOWN -1
 
+#define COIN_ID 4
+
 class game
 {
 private: 
@@ -32,7 +34,7 @@ private:
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	sf::Font font;
-	coin *c;
+	coin **c;
 
 	
 public:

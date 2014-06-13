@@ -5,6 +5,7 @@
 #include <list>
 #include <iostream>
 #include <chrono>
+#include "coin.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
@@ -19,6 +20,8 @@
 
 #define UNKNOWN -1
 
+#define COIN_ID 4
+
 #define SERVER_IP "127.0.0.1"
 #define LISTEN_PORT 50100
 
@@ -29,6 +32,7 @@ class game
 {
 private:
 	vehicle *vehicleTab[MAX_USERS];
+	coin *c;
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	bool vehiclesActive[MAX_USERS];

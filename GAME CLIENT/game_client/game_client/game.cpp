@@ -4,6 +4,7 @@
 struct ThreadParam{
 	vehicle **MyVehicle;
 	SOCKET Connect;
+	coin * c;
 	int clietntNumber;
 	bool *vehActive;
 	int * ID;
@@ -20,6 +21,7 @@ struct netowrkThreadParams{
 	vehicle ** vtab;
 	bool *vehActive;
 	int * ID;
+	coin * c;
 };
 
 //odbieranie pozycji innych pojazdow 
@@ -62,8 +64,15 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 		(functionParams->MyVehicle[msg->ID]->angle) = (msg->angle);
 		functionParams->vehActive[msg->ID] = true;
 	}
-	else
-		std::cout << "lagi";
+		if (msg->ID == COIN_ID){
+			functionParams->c->position.x = msg->X;
+			functionParams->c->position.y = msg->Y;
+			functionParams->c->display = true;
+			if (msg->X == UNKNOWN)
+				functionParams->c->display = false;
+		}
+//	else
+	//	std::cout << "lagi";
 	}
 
 	return 0;
@@ -118,6 +127,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	a->MyVehicle = param->vtab;
 	a->vehActive = param->vehActive;
 	a->ID = param->ID;
+	a->c = param->c;
 	
 	//watek do odbioru
 	handle = CreateThread(											
@@ -183,12 +193,14 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 	WORD version = MAKEWORD(2, 2); ///wersja winsock
 
 	HANDLE NetworkindThreadHandle;
+	c = new coin(0, 0);
 
 	//////////tworzenie watku do wywsylania eventow na server 
 	netowrkThreadParams a;
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;
 	a.ID = &this->ID;
+	a.c = this->c;
 	NetworkindThreadHandle = CreateThread(
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
@@ -198,6 +210,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		NULL);   // returns the thread identifier
 	//////////////////////-----------/////////////////////
 
+	
 	while (appWindow->isOpen())
 	{
 		std::chrono::high_resolution_clock::duration time_enlapsed = std::chrono::high_resolution_clock::now() - time;
@@ -278,6 +291,10 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					vehicleTab[i]->drowVehicle(appWindow);
 			}
 		}
+		if (c->display)
+			c->drowCoin(appWindow);
+
+
 		//wyswietlenie okna
 		appWindow->display();
 	}

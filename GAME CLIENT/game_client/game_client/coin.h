@@ -8,8 +8,8 @@ class coin
 {
 public:
 	sf::Vector2 <double> position; //x, y -- srodek kola 
-	bool changedPosition;
 	void drowCoin(sf::RenderWindow *appWindow);
+	bool display;
 
 	coin(int x, int y);
 	~coin();
