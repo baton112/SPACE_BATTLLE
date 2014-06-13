@@ -171,7 +171,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	return 0;
 }
 
-void game::runGameLoop(sf::RenderWindow *appWindow)
+void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 {
 	std::chrono::high_resolution_clock::time_point time;
 	time = std::chrono::high_resolution_clock::now();
@@ -277,7 +277,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 		{
 			count++;
 			coinWasCreated = true;
-			*c = new coin(200+count, 200);
+			*c = new coin(rand() % (X_size - 4) + 2, rand() % (Y_size - 4) + 2);
 			(*c)->changedPosition = true;
 		}
 

@@ -23,7 +23,7 @@ int main()
 	
 	//Uruchomienie gry 
 	game game;
-	game.runGameLoop(&window);
+	game.runGameLoop(&window,RESOLUTION_X,RESOLUTION_Y);
 
 
 	return 0;

@@ -40,7 +40,7 @@ private:
 public:
 	game();
 	~game();
-	void runGameLoop(sf::RenderWindow *appWindow);
+	void runGameLoop(sf::RenderWindow *appWindow,int X_size,int Y_size);
 	void drowScore(sf::RenderWindow *appWindow);
 	void loadFont();
 	
