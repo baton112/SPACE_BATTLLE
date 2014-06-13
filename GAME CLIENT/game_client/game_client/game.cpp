@@ -189,7 +189,7 @@ DWORD WINAPI ThreadSend(LPVOID lpParam)
 			msg->Y = functionParams->MyVehicle[*functionParams->ID]->position.y;
 
 			send(functionParams->Connect, (char*)msg, sizeof(message), 0);
-			Sleep(100/60); // magiczny sleep usuwajacy lagi 
+			Sleep(2*100/60); // magiczny sleep usuwajacy lagi 
 		}
 	}
 	return 0;

@@ -81,7 +81,7 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 			}
 		}
 
-		Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
+		Sleep(2*100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
 	}
 }
 
@@ -130,7 +130,8 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	SOCKET Connect = socket(AF_INET, SOCK_STREAM, NULL);
 
 	SOCKADDR_IN server;
-	server.sin_addr.s_addr = inet_addr("127.0.0.1");
+	//server.sin_addr.s_addr = inet_addr("127.0.0.1");
+	server.sin_addr.s_addr = inet_addr("192.168.0.13");
 	server.sin_family = AF_INET;
 	server.sin_port = htons(LISTEN_PORT);
 	int server_size = sizeof(server);
