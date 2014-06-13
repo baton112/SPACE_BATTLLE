@@ -6,6 +6,7 @@ struct ThreadParam{
 	coin ** c[COINS_NUMBER];
 	int clietntNumber;
 	bool * vehActive;
+	int *scoreTab;
 };
 
 struct message{
@@ -20,6 +21,7 @@ struct netowrkThreadParams{
 	vehicle ** vtab;
 	bool *vehActive;
 	coin ** c[COINS_NUMBER];
+	int *scoreTab;
 };
 
 //wysylanie pozycji "wsyzstkich do wszystkich"
@@ -39,7 +41,7 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 	while (true)
 	{
 
-		for (int i = 0; i < 4; i++){
+		for (int i = 0; i < MAX_USERS; i++){
 			if (functionParams->vehActive[i] && functionParams->clietntNumber != i){
 				
 				msg->ID = i;
@@ -47,24 +49,38 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 				msg->Y = functionParams->MyVehicle[i]->position.y;
 				msg->angle = functionParams->MyVehicle[i]->angle;
 				send(functionParams->Connect, (char*)msg, sizeof(message), 0);
+			
 			}
 		}
-		for (int i = 0; i < COINS_NUMBER; i++){
+		for (int i = 0; i < COINS_NUMBER; i++)
+		{
+			if ((*(functionParams->c[i])) != NULL && functionParams->c[i])
+			{
+				msg->ID = COIN_ID+i;
+				msg->X = (*(functionParams->c[i]))->position.x;
+				msg->Y = (*(functionParams->c[i]))->position.y;
+				(*(functionParams->c[i]))->changedPosition = false;
+				send(functionParams->Connect, (char*)msg, sizeof(message), 0);
+			}
+			else
+			{												//jesli moneta zniknela na skutek kolizji
+				msg->ID = COIN_ID+i;
+				msg->X = UNKNOWN;
+				send(functionParams->Connect, (char*)msg, sizeof(message), 0);
+			}
+		}
+		
+		for (int i = 0; i < MAX_USERS; i++){
+			if (functionParams->vehActive[i] && functionParams->clietntNumber == i){
 
-		if ((*(functionParams->c[i]))!=NULL){
-			msg->ID = COIN_ID+i;
-			msg->X = (*(functionParams->c[i]))->position.x;
-			msg->Y = (*(functionParams->c[i]))->position.y;
-			(*(functionParams->c[i]))->changedPosition = false;
-			send(functionParams->Connect, (char*)msg, sizeof(message), 0);;
+				msg->ID = SCORE_ID + i;
+				msg->X = i;
+				msg->Y = functionParams->scoreTab[i];
+				send(functionParams->Connect, (char*)msg, sizeof(message), 0);
+
+			}
 		}
-		else
-		{												//jesli moneta zniknela na skutek kolizji
-			msg->ID = COIN_ID+i;
-			msg->X = UNKNOWN;
-			send(functionParams->Connect, (char*)msg, sizeof(message), 0);
-		}
-		}
+
 		Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
 	}
 }
@@ -145,6 +161,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 				a->clietntNumber = ConnectedClients;
 				a->Connect = Connect;
 				a->vehActive = parametry->vehActive;
+				a->scoreTab = parametry->scoreTab;
 				for (int i = 0; i < COINS_NUMBER; i++){
 					a->c[i] = parametry->c[i];
 
@@ -210,6 +227,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 	
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;
+	a.scoreTab = this->playerScore;
 	NetworkindThreadHandle = CreateThread(
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
@@ -284,12 +302,12 @@ void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 			}
 		}
 
-		for (int i = 0; i < COINS_NUMBER; i++){
-			if (*c[i] == NULL && COIN_RADIUS)
+		for (int i = 0; i < COINS_NUMBER; i++)
+		{
+			if (*c[i] == NULL)
 			{
-
 				coinWasCreated = true;
-				*c[i] = new coin(rand() % (X_size - 4) + 2, rand() % (Y_size - 4) + 2);
+				*c[i] = new coin(rand() % (X_size - COIN_RADIUS) + COIN_RADIUS, rand() % (Y_size - COIN_RADIUS) + COIN_RADIUS);
 				(*c[i])->changedPosition = true;
 			}
 		}
@@ -301,11 +319,11 @@ void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 			{
 				if (vehicleTab[i] != NULL && vehiclesActive[i] == true)
 				{
-					
 						if (vehicleTab[i]->checkCoin(*c[j]))
 						{
 							delete *c[j];
 							*c[j] = NULL;
+							this->playerScore[i]++;
 							break;
 						}
 					}

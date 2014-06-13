@@ -8,6 +8,7 @@ struct ThreadParam{
 	int clietntNumber;
 	bool *vehActive;
 	int * ID;
+	int *score;
 };
 
 struct message{
@@ -22,6 +23,7 @@ struct netowrkThreadParams{
 	bool *vehActive;
 	int * ID;
 	coin * c[COINS_NUMBER];
+	int *score;
 };
 
 //odbieranie pozycji innych pojazdow 
@@ -58,18 +60,26 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	while (recv(functionParams->Connect, buf2, sizeof(message), 0) == sizeof(message)) // odbieanie wiadomosci od serwera
 	{
 		msg = (message *)buf2;
-		if (msg->ID >= 0 && msg->ID <= 3){
-		functionParams->MyVehicle[msg->ID]->position.x = msg->X;					//aktualizacja pozycji
-		functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
-		(functionParams->MyVehicle[msg->ID]->angle) = (msg->angle);
-		functionParams->vehActive[msg->ID] = true;
-	}
-		if (msg->ID >= COIN_ID){
+		if (msg->ID >= 0 && msg->ID <= 3)
+		{
+			functionParams->MyVehicle[msg->ID]->position.x = msg->X;					//aktualizacja pozycji
+			functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
+			(functionParams->MyVehicle[msg->ID]->angle) = (msg->angle);
+			functionParams->vehActive[msg->ID] = true;
+		}
+		else if (msg->ID >= COIN_ID && msg->ID < SCORE_ID)
+		{
 			functionParams->c[msg->ID-COIN_ID]->position.x = msg->X;
 			functionParams->c[msg->ID - COIN_ID]->position.y = msg->Y;
 			functionParams->c[msg->ID - COIN_ID]->display = true;
 			if (msg->X == UNKNOWN)
 				functionParams->c[msg->ID - COIN_ID]->display = false;
+		}
+		else if (msg->ID >= SCORE_ID && msg->ID < SCORE_ID+MAX_USERS)
+		{
+			if (msg->X == *functionParams->ID)
+			*functionParams->score = msg->Y;
+			//std::cout << msg->X << " " << msg->Y << " " << *functionParams->ID << std::endl;
 		}
 //	else
 	//	std::cout << "lagi";
@@ -112,7 +122,6 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	{
 		if (connect(Connect, (SOCKADDR*)&Client, sizeof(Client)))
 		{
-			
 			int len, bytes_sent;
 			char * x = (char*)&msg;
 			//len = strlen(msg2);
@@ -127,6 +136,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	a->MyVehicle = param->vtab;
 	a->vehActive = param->vehActive;
 	a->ID = param->ID;
+	a->score = param->score;
 	for (int i = 0; i < COINS_NUMBER; i++){
 		a->c[i] = param->c[i];
 	}
@@ -204,6 +214,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;
 	a.ID = &this->ID;
+	a.score = &this->score;
 	for (int i = 0; i < COINS_NUMBER; i++){
 		a.c[i] = this->c[i];
 	}
@@ -303,6 +314,8 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 			if (c[i]->display)
 				c[i]->drowCoin(appWindow);
 		}
+		drowScore(appWindow);
+
 
 		//wyswietlenie okna
 		appWindow->display();
@@ -319,10 +332,41 @@ game::game()
 		vehiclesActive[i] = false;
 		this->ID = UNKNOWN;
 	}
+	loadFont();
+	score = 0;
 }
 
 game::~game()
 {
 }
 
+void game::loadFont()
+{
+	// Load it from a file
+	if (!font.loadFromFile("SCRATCHM.TTF"))
+	{
+		// error...
+		std::cout << "Nie wczytano czcionki" << std::endl;
+	}
+}
 
+
+void game::drowScore(sf::RenderWindow *appWindow)
+{
+	sf::Text text;
+	text.setCharacterSize(15);
+	text.setPosition(10, 10);
+	text.setFont(font);
+	text.setColor(sf::Color::Red);
+	text.setStyle(sf::Text::Bold);
+	text.setPosition(appWindow->getSize().x - 150, 20);
+	sf::Text sfText;
+	std::ostringstream ss;
+	ss << "Player ";
+	ss << this->ID;
+	ss << " ";
+	ss << score;
+	text.setString(ss.str());
+	appWindow->draw(text);
+
+}

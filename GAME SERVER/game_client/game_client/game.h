@@ -24,6 +24,7 @@
 #define UNKNOWN -1
 
 #define COIN_ID 4
+#define SCORE_ID 100
 
 #define COINS_NUMBER 5
 
@@ -40,14 +41,14 @@ private:
 	sf::Font font;
 
 	coin **c[COINS_NUMBER];
-
+	void loadFont();
 	
 public:
 	game();
 	~game();
 	void runGameLoop(sf::RenderWindow *appWindow,int X_size,int Y_size);
 	void drowScore(sf::RenderWindow *appWindow);
-	void loadFont();
+	
 	
 };
 

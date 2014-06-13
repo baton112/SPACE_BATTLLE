@@ -6,6 +6,8 @@
 #include <iostream>
 #include <chrono>
 #include "coin.h"
+#include <sstream>
+
 
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
@@ -21,10 +23,12 @@
 #define UNKNOWN -1
 
 #define COIN_ID 4
+#define SCORE_ID 100
 
 #define SERVER_IP "127.0.0.1"
 #define LISTEN_PORT 50100
 #define COINS_NUMBER 5
+
 
 DWORD WINAPI ThreadSend(LPVOID lpParam);
 
@@ -37,11 +41,15 @@ private:
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	bool vehiclesActive[MAX_USERS];
+	int score;
 	int ID;
+	sf::Font font;
 public:
 	game();
 	~game();
-	void runGameLoop(sf::RenderWindow *appWindow);
+	void runGameLoop(sf::RenderWindow *appWindow);	
+	void drowScore(sf::RenderWindow *appWindow);
+	void loadFont();
 
 };
 
