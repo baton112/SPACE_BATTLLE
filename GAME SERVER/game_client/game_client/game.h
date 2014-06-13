@@ -25,6 +25,10 @@
 
 #define COIN_ID 4
 
+#define COINS_NUMBER 5
+
+
+
 class game
 {
 private: 
@@ -34,7 +38,8 @@ private:
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	sf::Font font;
-	coin **c;
+
+	coin **c[COINS_NUMBER];
 
 	
 public:

@@ -24,6 +24,7 @@
 
 #define SERVER_IP "127.0.0.1"
 #define LISTEN_PORT 50100
+#define COINS_NUMBER 5
 
 DWORD WINAPI ThreadSend(LPVOID lpParam);
 
@@ -32,7 +33,7 @@ class game
 {
 private:
 	vehicle *vehicleTab[MAX_USERS];
-	coin *c;
+	coin *c[COINS_NUMBER];
 	void loadTextures();
 	std::list< sf::Event> keysPressed;
 	bool vehiclesActive[MAX_USERS];

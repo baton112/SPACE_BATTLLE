@@ -4,7 +4,7 @@
 struct ThreadParam{
 	vehicle **MyVehicle;
 	SOCKET Connect;
-	coin * c;
+	coin * c[COINS_NUMBER];
 	int clietntNumber;
 	bool *vehActive;
 	int * ID;
@@ -21,7 +21,7 @@ struct netowrkThreadParams{
 	vehicle ** vtab;
 	bool *vehActive;
 	int * ID;
-	coin * c;
+	coin * c[COINS_NUMBER];
 };
 
 //odbieranie pozycji innych pojazdow 
@@ -64,12 +64,12 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 		(functionParams->MyVehicle[msg->ID]->angle) = (msg->angle);
 		functionParams->vehActive[msg->ID] = true;
 	}
-		if (msg->ID == COIN_ID){
-			functionParams->c->position.x = msg->X;
-			functionParams->c->position.y = msg->Y;
-			functionParams->c->display = true;
+		if (msg->ID >= COIN_ID){
+			functionParams->c[msg->ID-COIN_ID]->position.x = msg->X;
+			functionParams->c[msg->ID - COIN_ID]->position.y = msg->Y;
+			functionParams->c[msg->ID - COIN_ID]->display = true;
 			if (msg->X == UNKNOWN)
-				functionParams->c->display = false;
+				functionParams->c[msg->ID - COIN_ID]->display = false;
 		}
 //	else
 	//	std::cout << "lagi";
@@ -127,8 +127,9 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	a->MyVehicle = param->vtab;
 	a->vehActive = param->vehActive;
 	a->ID = param->ID;
-	a->c = param->c;
-	
+	for (int i = 0; i < COINS_NUMBER; i++){
+		a->c[i] = param->c[i];
+	}
 	//watek do odbioru
 	handle = CreateThread(											
 		NULL,                   // default security attributes
@@ -193,14 +194,20 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 	WORD version = MAKEWORD(2, 2); ///wersja winsock
 
 	HANDLE NetworkindThreadHandle;
-	c = new coin(0, 0);
+	for (int i = 0; i < COINS_NUMBER; i++){
+		c[i] = new coin(0, 0);
+	}
+	
 
 	//////////tworzenie watku do wywsylania eventow na server 
 	netowrkThreadParams a;
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;
 	a.ID = &this->ID;
-	a.c = this->c;
+	for (int i = 0; i < COINS_NUMBER; i++){
+		a.c[i] = this->c[i];
+	}
+	//
 	NetworkindThreadHandle = CreateThread(
 		NULL,                   // default security attributes
 		0,                      // use default stack size  
@@ -291,9 +298,11 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					vehicleTab[i]->drowVehicle(appWindow);
 			}
 		}
-		if (c->display)
-			c->drowCoin(appWindow);
-
+		
+		for (int i = 0; i < COINS_NUMBER; i++){
+			if (c[i]->display)
+				c[i]->drowCoin(appWindow);
+		}
 
 		//wyswietlenie okna
 		appWindow->display();

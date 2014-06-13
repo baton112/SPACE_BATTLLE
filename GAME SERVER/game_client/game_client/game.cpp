@@ -3,7 +3,7 @@
 struct ThreadParam{
 	vehicle **MyVehicle;
 	SOCKET Connect;
-	coin ** c;
+	coin ** c[COINS_NUMBER];
 	int clietntNumber;
 	bool * vehActive;
 };
@@ -19,7 +19,7 @@ struct message{
 struct netowrkThreadParams{
 	vehicle ** vtab;
 	bool *vehActive;
-	coin ** c;
+	coin ** c[COINS_NUMBER];
 };
 
 //wysylanie pozycji "wsyzstkich do wszystkich"
@@ -49,19 +49,21 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 				send(functionParams->Connect, (char*)msg, sizeof(message), 0);
 			}
 		}
-		if ((*(functionParams->c))!=NULL){
-			msg->ID = COIN_ID;
-			msg->X = (*(functionParams->c))->position.x;
-			msg->Y = (*(functionParams->c))->position.y;
-			(*(functionParams->c))->changedPosition = false;
+		for (int i = 0; i < COINS_NUMBER; i++){
+
+		if ((*(functionParams->c[i]))!=NULL){
+			msg->ID = COIN_ID+i;
+			msg->X = (*(functionParams->c[i]))->position.x;
+			msg->Y = (*(functionParams->c[i]))->position.y;
+			(*(functionParams->c[i]))->changedPosition = false;
 			send(functionParams->Connect, (char*)msg, sizeof(message), 0);;
 		}
 		else
 		{												//jesli moneta zniknela na skutek kolizji
-			msg->ID = COIN_ID;
+			msg->ID = COIN_ID+i;
 			msg->X = UNKNOWN;
 			send(functionParams->Connect, (char*)msg, sizeof(message), 0);
-		
+		}
 		}
 		Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
 	}
@@ -135,7 +137,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 			if (ConnectedClients < 3){
 				std::cout << "CONNECTED " << std::endl;
 				ConnectedClients++;
-				parametry->vehActive[ConnectedClients] =  true;
+				parametry->vehActive[ConnectedClients] = true;
 
 
 				ThreadParam * a = new ThreadParam;				//przygotowanie parametru dla funkcji watkow
@@ -143,8 +145,10 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 				a->clietntNumber = ConnectedClients;
 				a->Connect = Connect;
 				a->vehActive = parametry->vehActive;
-				a->c = parametry->c;
+				for (int i = 0; i < COINS_NUMBER; i++){
+					a->c[i] = parametry->c[i];
 
+				}
 				// -- odpalenie watku obslugi polaczenienia przychodzacego 
 				threadsHandleTab[ConnectedClients] = CreateThread (
 					NULL,                   // default security attributes
@@ -178,15 +182,17 @@ void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 	int ConnectedClients = 0;
 	WSAData wsaData;
 	WORD version = MAKEWORD(2, 2); ///wersja winsock
-	int count = 0;
+
 	HANDLE NetworkindThreadHandle;
 
 	bool coinWasCreated = false;
 	this->vehiclesActive[0]=true;
-	c = new coin * ;
-	*c = new coin(200, 200);
-	(*c)->changedPosition = true;
 
+	for (int i = 0; i < COINS_NUMBER; i++){
+		c[i] = new coin *;
+		*(c[i]) = new coin(rand() % (X_size - 4) + 2, rand() % (Y_size - 4) + 2);
+		(*c[i])->changedPosition = true;
+	}
 	int error = WSAStartup(version, &wsaData);
 	if (error != 0)
 	{
@@ -197,7 +203,11 @@ void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 
 	//-- tworzenie watku do oblugi polaczen 
 	netowrkThreadParams a;
-	a.c = this->c;
+	
+	for (int i = 0; i < COINS_NUMBER; i++){
+		a.c[i] = this->c[i];
+	}
+	
 	a.vtab = this->vehicleTab; //przeslanie tablicy wskaznikow na pojazdy obslugiwane przez uzytkownikow
 	a.vehActive = this->vehiclesActive;
 	NetworkindThreadHandle = CreateThread(
@@ -273,27 +283,32 @@ void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 					vehicleTab[0]->buttonAction(direction::right, delta);
 			}
 		}
-		if (*c == NULL && COIN_RADIUS)
-		{
-			count++;
-			coinWasCreated = true;
-			*c = new coin(rand() % (X_size - 4) + 2, rand() % (Y_size - 4) + 2);
-			(*c)->changedPosition = true;
-		}
 
+		for (int i = 0; i < COINS_NUMBER; i++){
+			if (*c[i] == NULL && COIN_RADIUS)
+			{
+
+				coinWasCreated = true;
+				*c[i] = new coin(rand() % (X_size - 4) + 2, rand() % (Y_size - 4) + 2);
+				(*c[i])->changedPosition = true;
+			}
+		}
 		//sprawdzanie kolizji z moneta 
+		for (int j = 0; j < COINS_NUMBER; j++){
 		if (*c != NULL && vehicleTab != NULL)
 		{
 			for (int i = 0; i < MAX_USERS; i++)
 			{
 				if (vehicleTab[i] != NULL && vehiclesActive[i] == true)
 				{
-					if (vehicleTab[i]->checkCoin(*c))
-					{
-						delete *c;
-						*c = NULL;
-						break;
-					}	
+					
+						if (vehicleTab[i]->checkCoin(*c[j]))
+						{
+							delete *c[j];
+							*c[j] = NULL;
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -316,8 +331,11 @@ void game::runGameLoop(sf::RenderWindow *appWindow,int X_size, int Y_size)
 			}
 		}
 		drowScore(appWindow);
-		if(*c !=NULL) (*c)->drowCoin(appWindow); 
-		//wyswietlenie okna
+		for (int i = 0; i < COINS_NUMBER; i++){
+			if (*c[i] != NULL)
+				(*c[i])->drowCoin(appWindow);
+			//wyswietlenie okna
+		}
 		appWindow->display();
 	}
 
@@ -357,7 +375,9 @@ game::game()
 		this->playerScore[i] = 0;
 	}
 	loadFont();
-	c = NULL;
+	for (int i = 0; i < COINS_NUMBER; i++){
+		c[i] = NULL;
+	}
 }
 
 void game::loadFont()
