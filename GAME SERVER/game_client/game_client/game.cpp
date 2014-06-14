@@ -37,7 +37,7 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 	while (true)
 	{
 
-		for (int i = 0; i < MAX_USERS; i++){
+		for (int i = 0; i < 4; i++){
 			if (functionParams->vehActive[i] && functionParams->clietntNumber != i){
 				
 				msg->ID = i;
@@ -65,22 +65,26 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 	message * msg;
 	std::cout << "Connected " << functionParams->clietntNumber << std::endl;
 	char *  buf = new char[(sizeof(message))];
-	//recev -- blokuje dalsze wykowyanie programu do nadejscia otrzymania czegos lub zamkniecia polaczenia
-	while (sizeof(message)==recv(functionParams->Connect, buf, sizeof(message), 0)) // przesylanie pojednym znaku 
+	while (1)
 	{
-			msg = (message*)buf;
-			if (msg->ID == UNKNOWN){											//jesli przyslal niewazne ID, (podłączył się), to odeslij mu ID tylko ID
-				msg->ID = functionParams->clietntNumber;
-				send(functionParams->Connect, (char*)&msg->ID, sizeof(int), 0);
-			}
-			else{
-				functionParams->MyVehicle[msg->ID]->position.x = msg->X;		//zapisywanie odebranyc pozycji
-				functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
-				functionParams->MyVehicle[msg->ID]->angle = msg->angle;
-			}
+
+		//recev -- blokuje dalsze wykowyanie programu do nadejscia otrzymania czegos lub zamkniecia polaczenia
+		while (sizeof(message)==recv(functionParams->Connect, buf, sizeof(message), 0)) // przesylanie pojednym znaku 
+		{
+			 msg = (message*)buf;
+			 if (msg->ID == UNKNOWN){											//jesli przyslal niewazne ID, (podłączył się), to odeslij mu ID tylko ID
+				 msg->ID = functionParams->clietntNumber;
+				 send(functionParams->Connect, (char*)&msg->ID, sizeof(int), 0);
+			 }
+			 else{
+				 functionParams->MyVehicle[msg->ID]->position.x = msg->X;		//zapisywanie odebranyc pozycji
+				 functionParams->MyVehicle[msg->ID]->position.y = msg->Y;
+				 functionParams->MyVehicle[msg->ID]->angle = msg->angle;
+			 }
+		}
+
+		std::cout << "koncze";
 	}
-	
-	std::cout << "zakonczono polaczenie";
 
 	return 0;
 }
@@ -112,7 +116,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 	{
 		if (Connect = accept(Listen, (struct sockaddr FAR*)&server, &server_size))
 		{
-			if (ConnectedClients < MAX_USERS-1){
+			if (ConnectedClients < 3){
 				std::cout << "CONNECTED " << std::endl;
 				ConnectedClients++;
 				parametry->vehActive[ConnectedClients] =  true;
