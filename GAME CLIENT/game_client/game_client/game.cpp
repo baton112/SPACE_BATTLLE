@@ -81,7 +81,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 			*functionParams->score = msg->Y;
 			//std::cout << msg->X << " " << msg->Y << " " << *functionParams->ID << std::endl;
 		}
-		std::cout <<"ID=" << msg->ID << " X="<< msg->X << " " << msg->Y << " " << *functionParams->ID << std::endl;
+		//std::cout <<"ID=" << msg->ID << " X="<< msg->X << " " << msg->Y << " " << *functionParams->ID << std::endl;
 //	else
 	//	std::cout << "lagi";
 	}
@@ -266,7 +266,7 @@ void game::runGameLoop(sf::RenderWindow *appWindow)
 					if (iter->key.code == event.key.code)
 						i = iter;
 				}
-				keysPressed.erase(i);
+,				keysPressed.erase(i);
 			}
 		};
 

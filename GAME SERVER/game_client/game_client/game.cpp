@@ -119,7 +119,7 @@ DWORD WINAPI ThreadFunctionRecive(LPVOID lpParam)
 
 		std::cout << "koncze";
 	}
-
+	
 	return 0;
 }
 
@@ -131,7 +131,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 
 	SOCKADDR_IN server;
 	//server.sin_addr.s_addr = inet_addr("127.0.0.1");
-	server.sin_addr.s_addr = inet_addr("192.168.0.13");
+	//server.sin_addr.s_addr = inet_addr("192.168.0.13");
 	server.sin_family = AF_INET;
 	server.sin_port = htons(LISTEN_PORT);
 	int server_size = sizeof(server);

@@ -25,7 +25,7 @@
 #define COIN_ID 4
 #define SCORE_ID 100
 
-#define SERVER_IP "192.168.0.13" //"127.0.0.1"
+#define SERVER_IP "127.0.0.1"
 #define LISTEN_PORT 50000
 #define COINS_NUMBER 5
 
