@@ -26,11 +26,9 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 				msg->Y = functionParams->MyVehicle[i]->position.y;
 				msg->angle = functionParams->MyVehicle[i]->angle;
 				send(functionParams->Connect, (char*)msg, sizeof(message), 0);
-				std::cout << "wyslano pozucjeeee" << msg->X << " " << msg->Y << " " << msg->angle << " " << msg->ID  << std::endl;
 			}
 		}
-		//Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
-		Sleep(1000);
+		Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
 		
 	}
 }
@@ -121,7 +119,9 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 
 	HANDLE threadsHandleTab[MAX_USERS];
 	std::cout << "LISTEN " << std::endl;
+	vehicle **vehicleTab;
 	netowrkThreadParams * parametry = (netowrkThreadParams*)lpParam;
+	vehicleTab = parametry->vtab;
 
 	for (;;)
 	{
@@ -134,7 +134,7 @@ DWORD WINAPI ThreadHandleConnections(LPVOID lpParam)
 
 
 				ThreadParam * a = new ThreadParam;				//przygotowanie parametru dla funkcji watkow
-				a->MyVehicle = parametry->vtab;
+				a->MyVehicle = vehicleTab;
 				a->clietntNumber = ConnectedClients;
 				a->Connect = Connect;
 				a->vehActive = parametry->vehActive;
