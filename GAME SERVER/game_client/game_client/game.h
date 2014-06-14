@@ -19,7 +19,7 @@
 
 #define MAX_USERS 4
 
-#define LISTEN_PORT 50100
+#define LISTEN_PORT 50000
 
 #define UNKNOWN -1
 

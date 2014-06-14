@@ -81,7 +81,7 @@ DWORD WINAPI ThreadSendToEverybody(LPVOID lpParam)
 			}
 		}
 
-		Sleep(2*100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
+		Sleep(100/60); // magiczny sleep usuwajacy lagi - wysylanie 60 razy na sekunde 
 	}
 }
 
